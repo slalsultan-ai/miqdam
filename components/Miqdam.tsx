@@ -800,40 +800,109 @@ export default function Miqdam() {
   // ── MATCH ──
   if (view === "match" && ayahs.length > 0) {
     const info = EX_LABELS[exType] || EX_LABELS.listen;
+    const pct = Math.min(reps / REPS, 1);
+    const excitement = pct;
+    // Ball position for mini pitch (0 to 100%)
+    const ballPct = pct < 0.8 ? pct * 70 / 0.8 : 70 + (pct - 0.8) * 150;
+    const clampedBall = Math.min(ballPct, 100);
+
     return (
-      <div style={{ ...base, background: "linear-gradient(180deg,#E8F5E9,#C8E6C9)", display: "flex", flexDirection: "column" }}>
+      <div style={{ ...base, background: "#0D1B2A", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <div style={{ maxWidth: 540, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-          {/* Header */}
-          <div style={{ padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ fontSize: 18 }}>⚽</span>
-              <span style={{ fontWeight: 900, fontSize: 17, color: "#0D7C3D" }}>{goals}</span>
-              <span style={{ fontSize: 13, color: "#999" }}>- 0</span>
+          
+          {/* ── DARK HEADER: Score + Pitch + Stats ── */}
+          <div style={{ background: "linear-gradient(180deg, #0D1B2A, #1B3A4B)", padding: "12px 16px 0" }}>
+            
+            {/* Score bar */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 16 }}>⚽</span>
+                <span style={{ fontWeight: 900, fontSize: 20, color: "#fff" }}>{goals}</span>
+                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>- 0</span>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 12, padding: "4px 12px" }}>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>آية </span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>{curAyahIdx + 1}</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}> / {totalAyahs}</span>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 12, padding: "4px 12px" }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: excitement > 0.7 ? "#F9A825" : "#fff" }}>{reps}</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}> / {REPS}</span>
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: "#5a5a6a", fontWeight: 600 }}>آية {curAyahIdx + 1} / {totalAyahs}</div>
-            <div style={{ fontSize: 12, color: "#5a5a6a", background: "rgba(0,0,0,0.05)", padding: "3px 10px", borderRadius: 8 }}>
-              تكرار {reps} / {REPS}
+
+            {/* ── Mini pitch progress bar ── */}
+            <div style={{ 
+              height: 56, borderRadius: 14, overflow: "hidden", position: "relative",
+              background: "linear-gradient(90deg, #1a4d1c, #2d6a30, #1a4d1c)",
+              border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}`,
+              transition: "border-color 0.5s",
+              marginBottom: 12,
+            }}>
+              {/* Grass stripes */}
+              {[0,15,30,45,60,75,90].map((x, i) => (
+                <div key={i} style={{ position: "absolute", left: `${x}%`, top: 0, bottom: 0, width: "7.5%", background: i % 2 === 0 ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)" }} />
+              ))}
+              
+              {/* Center line */}
+              <div style={{ position: "absolute", left: "50%", top: 4, bottom: 4, width: 1, background: "rgba(255,255,255,0.15)" }} />
+              <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 20, height: 20, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)" }} />
+              
+              {/* Goal post */}
+              <div style={{ position: "absolute", right: 2, top: 10, bottom: 10, width: 18, border: "2px solid rgba(255,255,255,0.4)", borderLeft: "none", borderRadius: "0 4px 4px 0" }} />
+              
+              {/* Progress glow trail */}
+              <div style={{ 
+                position: "absolute", left: 0, top: 0, bottom: 0, 
+                width: `${clampedBall}%`,
+                background: `linear-gradient(90deg, rgba(249,168,37,0.05), rgba(249,168,37,${0.1 + excitement * 0.15}))`,
+                transition: "width 1s cubic-bezier(0.25,0.46,0.45,0.94)",
+              }} />
+              
+              {/* Player + Ball */}
+              <div style={{ 
+                position: "absolute", left: `${Math.max(2, clampedBall - 5)}%`, top: "50%", transform: "translateY(-50%)",
+                transition: "left 1s cubic-bezier(0.25,0.46,0.45,0.94)",
+                display: "flex", alignItems: "center", gap: 3,
+              }}>
+                {/* Player emoji */}
+                <span style={{ fontSize: 24, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>🏃</span>
+                {/* Ball */}
+                <span style={{ fontSize: 16, animation: reps > 0 ? "ballSpin 0.8s linear infinite" : "none" }}>⚽</span>
+              </div>
+
+              {/* Excitement particles near goal */}
+              {excitement > 0.8 && (
+                <div style={{ position: "absolute", right: 25, top: "50%", transform: "translateY(-50%)", fontSize: 14, animation: "pulse 0.5s infinite", opacity: 0.7 }}>🔥</div>
+              )}
             </div>
           </div>
 
-          {/* Pitch - constrained height */}
-          <div style={{ padding: "0 10px", maxHeight: 200, overflow: "hidden" }}>
-            <Pitch progress={reps} maxReps={REPS} scored={false} goalAnim={false} jerseyColor={profile?.color} />
-          </div>
+          {/* ── LIGHT BODY: Exercise type + Ayah + Exercise ── */}
+          <div style={{ 
+            flex: 1, background: "#fff", borderRadius: "24px 24px 0 0", 
+            padding: "16px 16px 24px", marginTop: -8,
+            display: "flex", flexDirection: "column", gap: 12,
+            overflowY: "auto",
+          }}>
+            {/* Exercise type badge */}
+            <div style={{ textAlign: "center" }}>
+              <span style={{ 
+                background: info.color, color: "#fff", 
+                padding: "5px 16px", borderRadius: 20, fontSize: 13, fontWeight: 700,
+                boxShadow: `0 2px 8px ${info.color}33`,
+              }}>
+                {info.icon} {info.label}
+              </span>
+            </div>
 
-          {/* Exercise badge */}
-          <div style={{ textAlign: "center", margin: "8px 0 4px" }}>
-            <span style={{ background: info.color, color: "#fff", padding: "4px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700 }}>
-              {info.icon} {info.label}
-            </span>
-          </div>
-
-          {/* Exercise area */}
-          <div style={{ flex: 1, padding: "8px 16px 24px", overflowY: "auto" }}>
-            {exType === "listen" && <ExListen key={`l${curAyahIdx}-${reps}`} ayah={curAyah} ayahGlobalNum={curGlobalNum} onDone={onExDone} />}
-            {exType === "nextWord" && <ExNextWord key={`n${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
-            {exType === "blanks" && <ExBlanks key={`b${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
-            {exType === "order" && <ExOrder key={`o${curAyahIdx}-${reps}`} ayah={curAyah} onDone={onExDone} />}
+            {/* Exercise content */}
+            <div style={{ flex: 1 }}>
+              {exType === "listen" && <ExListen key={`l${curAyahIdx}-${reps}`} ayah={curAyah} ayahGlobalNum={curGlobalNum} onDone={onExDone} />}
+              {exType === "nextWord" && <ExNextWord key={`n${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
+              {exType === "blanks" && <ExBlanks key={`b${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
+              {exType === "order" && <ExOrder key={`o${curAyahIdx}-${reps}`} ayah={curAyah} onDone={onExDone} />}
+            </div>
           </div>
         </div>
       </div>
