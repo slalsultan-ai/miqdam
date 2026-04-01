@@ -866,7 +866,7 @@ export default function Miqdam() {
                 display: "flex", alignItems: "center", gap: 3,
               }}>
                 {/* Player emoji */}
-                <span style={{ fontSize: 24, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>🏃</span>
+                <span style={{ fontSize: 24, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))", display: "inline-block", transform: "scaleX(-1)" }}>🏃</span>
                 {/* Ball */}
                 <span style={{ fontSize: 16, animation: reps > 0 ? "ballSpin 0.8s linear infinite" : "none" }}>⚽</span>
               </div>
