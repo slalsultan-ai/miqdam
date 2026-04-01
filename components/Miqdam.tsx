@@ -676,44 +676,97 @@ export default function Miqdam() {
   // ── PICK SURAH ──
   if (view === "pick") {
     const maxAy = SURAH_AYAH_COUNT[surahNum - 1] || 7;
+    
     return (
-      <div style={{ ...base, background: "linear-gradient(180deg,#E8F5E9,#C8E6C9)", display: "flex", flexDirection: "column", padding: 20 }}>
-        {profile && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, animation: "fadeUp 0.3s both" }}>
-            <Jersey c={profile.color} n={profile.num} sz={44} />
-            <div><div style={{ fontWeight: 800, fontSize: 16 }}>{profile.name}</div><div style={{ fontSize: 12, color: "#5a5a6a" }}>{profile.badge} {profile.team}</div></div>
-          </div>
-        )}
-        <div style={{ background: "#fff", borderRadius: 24, padding: 22, boxShadow: "0 4px 20px rgba(0,0,0,0.05)", animation: "fadeUp 0.35s 0.08s both", flex: 1 }}>
-          <h2 style={{ fontSize: 21, fontWeight: 800, marginBottom: 18, textAlign: "center" }}>📖 اختر مباراة اليوم</h2>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#5a5a6a", marginBottom: 5 }}>السورة</label>
-          <select value={surahNum} onChange={e => { const v = +e.target.value; setSurahNum(v); setAyFrom(1); setAyTo(SURAH_AYAH_COUNT[v - 1]); }}
-            style={{ width: "100%", padding: "11px 14px", borderRadius: 14, border: "2px solid #e0e0e0", fontSize: 17, fontFamily: "'Tajawal'", marginBottom: 16, direction: "rtl", background: "#fff" }}>
-            {SURAH_NAMES.map((n, i) => <option key={i} value={i + 1}>{i + 1}. {n}</option>)}
-          </select>
-          <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#5a5a6a", marginBottom: 5 }}>من آية</label>
-              <input type="number" value={ayFrom} min={1} max={ayTo} onChange={e => setAyFrom(Math.max(1, Math.min(+e.target.value, ayTo)))}
-                style={{ width: "100%", padding: 11, borderRadius: 14, border: "2px solid #e0e0e0", fontSize: 17, textAlign: "center", fontFamily: "'Tajawal'" }} />
+      <div style={{ ...base, background: "linear-gradient(180deg, #0D7C3D 0%, #1B5E20 40%, #0A3D1F 100%)", display: "flex", flexDirection: "column", minHeight: "100vh", alignItems: "center" }}>
+        {/* Header */}
+        <div style={{ maxWidth: 540, width: "100%", padding: "20px 20px 0", animation: "fadeUp 0.3s both" }}>
+          {profile && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+              <Jersey c={profile.color} n={profile.num} sz={44} />
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 16, color: "#fff" }}>{profile.name}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{profile.badge} {profile.team}</div>
+              </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#5a5a6a", marginBottom: 5 }}>إلى آية</label>
-              <input type="number" value={ayTo} min={ayFrom} max={maxAy} onChange={e => setAyTo(Math.max(ayFrom, Math.min(+e.target.value, maxAy)))}
-                style={{ width: "100%", padding: 11, borderRadius: 14, border: "2px solid #e0e0e0", fontSize: 17, textAlign: "center", fontFamily: "'Tajawal'" }} />
+          )}
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: "#fff", textAlign: "center", marginBottom: 4 }}>📖 اختر مباراة اليوم</h2>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", textAlign: "center", marginBottom: 20 }}>حدد السورة والآيات اللي تبي تحفظها</p>
+        </div>
+
+        {/* Card */}
+        <div style={{ flex: 1, background: "#fff", borderRadius: "28px 28px 0 0", padding: "28px 20px", animation: "fadeUp 0.4s 0.1s both", width: "100%", maxWidth: 540 }}>
+          
+          {/* Surah selector */}
+          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>السورة</label>
+          <div style={{ position: "relative", marginBottom: 20 }}>
+            <select value={surahNum} onChange={e => { const v = +e.target.value; setSurahNum(v); setAyFrom(1); setAyTo(SURAH_AYAH_COUNT[v - 1]); }}
+              style={{
+                width: "100%", padding: "14px 16px", borderRadius: 16,
+                border: "2px solid #E0E0E0", fontSize: 18, fontFamily: "'Tajawal'",
+                direction: "rtl", background: "#FAFAFA", color: "#1a1a2e",
+                appearance: "auto" as any, WebkitAppearance: "auto" as any, maxHeight: 48,
+                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%235a5a6a'/%3E%3C/svg%3E\")",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "16px center",
+                cursor: "pointer",
+              }}>
+              {SURAH_NAMES.map((n, i) => (
+                <option key={i} value={i + 1}>
+                  {n} ({i + 1}) — {SURAH_AYAH_COUNT[i]} آية {QURAN_DATA[i + 1] ? "" : " 🌐"}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Ayah range - side by side */}
+          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>نطاق الآيات</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            <div style={{ flex: 1, background: "#FAFAFA", borderRadius: 16, border: "2px solid #E0E0E0", padding: "10px 8px", textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "#999", marginBottom: 4, fontWeight: 600 }}>من آية</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <button onClick={() => setAyFrom(Math.max(1, ayFrom - 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>−</button>
+                <span style={{ fontSize: 22, fontWeight: 900, minWidth: 36, color: "#1a1a2e" }}>{ayFrom}</span>
+                <button onClick={() => setAyFrom(Math.min(ayTo, ayFrom + 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>+</button>
+              </div>
+            </div>
+            
+            <div style={{ fontSize: 20, color: "#ccc", fontWeight: 300 }}>→</div>
+            
+            <div style={{ flex: 1, background: "#FAFAFA", borderRadius: 16, border: "2px solid #E0E0E0", padding: "10px 8px", textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "#999", marginBottom: 4, fontWeight: 600 }}>إلى آية</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <button onClick={() => setAyTo(Math.max(ayFrom, ayTo - 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>−</button>
+                <span style={{ fontSize: 22, fontWeight: 900, minWidth: 36, color: "#1a1a2e" }}>{ayTo}</span>
+                <button onClick={() => setAyTo(Math.min(maxAy, ayTo + 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>+</button>
+              </div>
             </div>
           </div>
-          <div style={{ background: "#E8F5E9", borderRadius: 14, padding: 13, marginBottom: 18, direction: "rtl" }}>
-            <p style={{ fontSize: 14, color: "#0A5C2D" }}>🏟️ <b>المباراة:</b> سورة {SURAH_NAMES[surahNum - 1]} — الآيات {ayFrom} إلى {ayTo}</p>
-            <p style={{ fontSize: 13, color: "#0A5C2D", marginTop: 4 }}>⚽ <b>{ayTo - ayFrom + 1} هجمة</b> × 30 تكرار لكل آية</p>
+
+          {/* Match summary */}
+          <div style={{ background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)", borderRadius: 18, padding: 16, marginBottom: 20, direction: "rtl", border: "1px solid rgba(13,124,61,0.1)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ fontSize: 16, fontWeight: 800, color: "#0A5C2D" }}>🏟️ {SURAH_NAMES[surahNum - 1]}</p>
+                <p style={{ fontSize: 13, color: "#2E7D32", marginTop: 2 }}>الآيات {ayFrom} إلى {ayTo}</p>
+              </div>
+              <div style={{ textAlign: "center", background: "#fff", borderRadius: 14, padding: "8px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#0D7C3D" }}>{ayTo - ayFrom + 1}</div>
+                <div style={{ fontSize: 11, color: "#999" }}>هجمات</div>
+              </div>
+            </div>
           </div>
+
+          {/* Error */}
           {fetchError && (
             <div style={{ background: "#FFEBEE", borderRadius: 14, padding: 13, marginBottom: 14, direction: "rtl" }}>
               <p style={{ fontSize: 14, color: "#C62828" }}>⚠️ {fetchError}</p>
             </div>
           )}
+
+          {/* Start button */}
           <Btn onClick={startMatch} color="#0D7C3D" full disabled={loading}
-            style={{ fontSize: 19, padding: 15, animation: loading ? "none" : "pulse 2.5s infinite" }}>
+            style={{ fontSize: 20, padding: 16, borderRadius: 18, animation: loading ? "none" : "pulse 2.5s infinite" }}>
             {loading ? "⏳ جاري التحميل..." : "⚽ انطلق للمباراة!"}
           </Btn>
         </div>
@@ -749,37 +802,39 @@ export default function Miqdam() {
     const info = EX_LABELS[exType] || EX_LABELS.listen;
     return (
       <div style={{ ...base, background: "linear-gradient(180deg,#E8F5E9,#C8E6C9)", display: "flex", flexDirection: "column" }}>
-        {/* Header */}
-        <div style={{ padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ fontSize: 18 }}>⚽</span>
-            <span style={{ fontWeight: 900, fontSize: 17, color: "#0D7C3D" }}>{goals}</span>
-            <span style={{ fontSize: 13, color: "#999" }}>- 0</span>
+        <div style={{ maxWidth: 540, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          {/* Header */}
+          <div style={{ padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ fontSize: 18 }}>⚽</span>
+              <span style={{ fontWeight: 900, fontSize: 17, color: "#0D7C3D" }}>{goals}</span>
+              <span style={{ fontSize: 13, color: "#999" }}>- 0</span>
+            </div>
+            <div style={{ fontSize: 12, color: "#5a5a6a", fontWeight: 600 }}>آية {curAyahIdx + 1} / {totalAyahs}</div>
+            <div style={{ fontSize: 12, color: "#5a5a6a", background: "rgba(0,0,0,0.05)", padding: "3px 10px", borderRadius: 8 }}>
+              تكرار {reps} / {REPS}
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: "#5a5a6a", fontWeight: 600 }}>آية {curAyahIdx + 1} / {totalAyahs}</div>
-          <div style={{ fontSize: 12, color: "#5a5a6a", background: "rgba(0,0,0,0.05)", padding: "3px 10px", borderRadius: 8 }}>
-            تكرار {reps} / {REPS}
+
+          {/* Pitch - constrained height */}
+          <div style={{ padding: "0 10px", maxHeight: 200, overflow: "hidden" }}>
+            <Pitch progress={reps} maxReps={REPS} scored={false} goalAnim={false} jerseyColor={profile?.color} />
           </div>
-        </div>
 
-        {/* Pitch */}
-        <div style={{ padding: "0 10px" }}>
-          <Pitch progress={reps} maxReps={REPS} scored={false} goalAnim={false} jerseyColor={profile?.color} />
-        </div>
+          {/* Exercise badge */}
+          <div style={{ textAlign: "center", margin: "8px 0 4px" }}>
+            <span style={{ background: info.color, color: "#fff", padding: "4px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700 }}>
+              {info.icon} {info.label}
+            </span>
+          </div>
 
-        {/* Exercise badge */}
-        <div style={{ textAlign: "center", margin: "8px 0 4px" }}>
-          <span style={{ background: info.color, color: "#fff", padding: "3px 13px", borderRadius: 20, fontSize: 13, fontWeight: 700 }}>
-            {info.icon} {info.label}
-          </span>
-        </div>
-
-        {/* Exercise */}
-        <div style={{ flex: 1, padding: "6px 16px 20px", overflowY: "auto" }}>
-          {exType === "listen" && <ExListen key={`l${curAyahIdx}-${reps}`} ayah={curAyah} ayahGlobalNum={curGlobalNum} onDone={onExDone} />}
-          {exType === "nextWord" && <ExNextWord key={`n${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
-          {exType === "blanks" && <ExBlanks key={`b${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
-          {exType === "order" && <ExOrder key={`o${curAyahIdx}-${reps}`} ayah={curAyah} onDone={onExDone} />}
+          {/* Exercise area */}
+          <div style={{ flex: 1, padding: "8px 16px 24px", overflowY: "auto" }}>
+            {exType === "listen" && <ExListen key={`l${curAyahIdx}-${reps}`} ayah={curAyah} ayahGlobalNum={curGlobalNum} onDone={onExDone} />}
+            {exType === "nextWord" && <ExNextWord key={`n${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
+            {exType === "blanks" && <ExBlanks key={`b${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
+            {exType === "order" && <ExOrder key={`o${curAyahIdx}-${reps}`} ayah={curAyah} onDone={onExDone} />}
+          </div>
         </div>
       </div>
     );
