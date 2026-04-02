@@ -44,10 +44,12 @@ const BADGES = ["⚽","🏆","⭐","🦁","🦅","🔥","💎","👑"];
 
 // ── Exercise type by rep (easy → hard, repeating) ──
 // 0-7: listen, 8-14: nextWord, 15-21: blanks, 22-27: order, 28-29: order
-const getExType = (rep) => {
-  if (rep < 8) return "listen";
-  if (rep < 15) return "nextWord";
-  if (rep < 22) return "blanks";
+// Exercise type scales with reps target (easy → hard)
+const getExType = (rep, total) => {
+  const pct = rep / total;
+  if (pct < 0.25) return "listen";
+  if (pct < 0.5) return "nextWord";
+  if (pct < 0.75) return "blanks";
   return "order";
 };
 const EX_LABELS = {
@@ -55,6 +57,40 @@ const EX_LABELS = {
   nextWord: { label: "ما الكلمة التالية؟", icon: "🤔", color: "#1565C0" },
   blanks: { label: "أكمل الكلمة المخفية", icon: "✨", color: "#6A1B9A" },
   order: { label: "رتّب الكلمات", icon: "⚡", color: "#E65100" },
+};
+
+// ── Theme configurations ──
+const THEMES = {
+  football: {
+    name: "كرة قدم", icon: "⚽", emoji: "🏃", target: "🥅",
+    bg: "linear-gradient(90deg, #1a4d1c, #2d6a30, #1a4d1c)",
+    headerBg: "linear-gradient(180deg, #0D1B2A, #1B3A4B)",
+    goalText: "هـــدف!", goalSub: "GOOOAAL!",
+    progressEmoji: "⚽", exciteEmoji: "🔥",
+    celebBg: "radial-gradient(ellipse at center, #1B5E20 0%, #0A3D1F 50%, #071a0e 100%)",
+    accent: "#0D7C3D",
+    actionText: (n) => `${n} هجمة`,
+  },
+  racing: {
+    name: "سباق سيارات", icon: "🏎️", emoji: "🏎️", target: "🏁",
+    bg: "linear-gradient(90deg, #37474F, #455A64, #37474F)",
+    headerBg: "linear-gradient(180deg, #1a1a2e, #2d2d44)",
+    goalText: "فـــوز!", goalSub: "WINNER!",
+    progressEmoji: "🏎️", exciteEmoji: "💨",
+    celebBg: "radial-gradient(ellipse at center, #1a1a2e 0%, #0d0d1a 50%, #050510 100%)",
+    accent: "#E65100",
+    actionText: (n) => `${n} سباق`,
+  },
+  climbing: {
+    name: "تسلق جبل", icon: "⛰️", emoji: "🧗", target: "🏔️",
+    bg: "linear-gradient(90deg, #4E342E, #6D4C41, #4E342E)",
+    headerBg: "linear-gradient(180deg, #1B2631, #2C3E50)",
+    goalText: "القمة!", goalSub: "SUMMIT!",
+    progressEmoji: "🧗", exciteEmoji: "⭐",
+    celebBg: "radial-gradient(ellipse at center, #1B2631 0%, #0d1a26 50%, #050d14 100%)",
+    accent: "#00838F",
+    actionText: (n) => `${n} قمة`,
+  },
 };
 
 // ── Styles ──
@@ -517,6 +553,8 @@ export default function Miqdam() {
   const [surahNum, setSurahNum] = useState(112);
   const [ayFrom, setAyFrom] = useState(1);
   const [ayTo, setAyTo] = useState(4);
+  const [repsTarget, setRepsTarget] = useState(30);
+  const [theme, setTheme] = useState("football"); // football, racing, climbing
   // Match
   const [ayahs, setAyahs] = useState([]);
   const [ayahGlobalNums, setAyahGlobalNums] = useState([]);
@@ -594,7 +632,7 @@ export default function Miqdam() {
     setTotalC(tc => tc + c); setTotalQ(tq => tq + q);
     const next = reps + 1;
     setReps(next);
-    if (next >= REPS) {
+    if (next >= repsTarget) {
       sfx("goal"); setShowGoal(true); setGoals(g => g + 1);
       setTimeout(() => {
         setShowGoal(false);
@@ -602,7 +640,7 @@ export default function Miqdam() {
         else { setCurAyahIdx(i => i + 1); setReps(0); setExType("listen"); }
       }, 5000);
     } else {
-      setExType(getExType(next));
+      setExType(getExType(next, repsTarget));
     }
   };
 
@@ -743,16 +781,50 @@ export default function Miqdam() {
             </div>
           </div>
 
+          {/* Reps per ayah */}
+          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>عدد التكرار لكل آية</label>
+          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+            {[10, 20, 30, 50].map(n => (
+              <button key={n} onClick={() => { sfx("tap"); setRepsTarget(n); }}
+                style={{
+                  flex: 1, padding: "10px 0", borderRadius: 14, fontSize: 18, fontWeight: 800,
+                  border: repsTarget === n ? "3px solid #0D7C3D" : "3px solid #E0E0E0",
+                  background: repsTarget === n ? "#E8F5E9" : "#FAFAFA",
+                  color: repsTarget === n ? "#0D7C3D" : "#999",
+                  cursor: "pointer", transition: "all 0.2s",
+                  fontFamily: "'Tajawal',sans-serif",
+                }}>{n}</button>
+            ))}
+          </div>
+
+          {/* Theme picker */}
+          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>اختر الثيم</label>
+          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+            {Object.entries(THEMES).map(([key, t]) => (
+              <button key={key} onClick={() => { sfx("tap"); setTheme(key); }}
+                style={{
+                  flex: 1, padding: "12px 8px", borderRadius: 16, textAlign: "center",
+                  border: theme === key ? `3px solid ${t.accent}` : "3px solid #E0E0E0",
+                  background: theme === key ? `${t.accent}11` : "#FAFAFA",
+                  cursor: "pointer", transition: "all 0.2s",
+                  fontFamily: "'Tajawal',sans-serif",
+                }}>
+                <div style={{ fontSize: 28 }}>{t.icon}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: theme === key ? t.accent : "#999", marginTop: 4 }}>{t.name}</div>
+              </button>
+            ))}
+          </div>
+
           {/* Match summary */}
           <div style={{ background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)", borderRadius: 18, padding: 16, marginBottom: 20, direction: "rtl", border: "1px solid rgba(13,124,61,0.1)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <p style={{ fontSize: 16, fontWeight: 800, color: "#0A5C2D" }}>🏟️ {SURAH_NAMES[surahNum - 1]}</p>
-                <p style={{ fontSize: 13, color: "#2E7D32", marginTop: 2 }}>الآيات {ayFrom} إلى {ayTo}</p>
+                <p style={{ fontSize: 16, fontWeight: 800, color: "#0A5C2D" }}>{THEMES[theme].icon} {SURAH_NAMES[surahNum - 1]}</p>
+                <p style={{ fontSize: 13, color: "#2E7D32", marginTop: 2 }}>الآيات {ayFrom} إلى {ayTo} • {repsTarget} تكرار</p>
               </div>
               <div style={{ textAlign: "center", background: "#fff", borderRadius: 14, padding: "8px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <div style={{ fontSize: 24, fontWeight: 900, color: "#0D7C3D" }}>{ayTo - ayFrom + 1}</div>
-                <div style={{ fontSize: 11, color: "#999" }}>هجمات</div>
+                <div style={{ fontSize: 11, color: "#999" }}>{THEMES[theme].actionText(ayTo - ayFrom + 1).split(" ")[1]}</div>
               </div>
             </div>
           </div>
@@ -775,19 +847,20 @@ export default function Miqdam() {
   }
 
   // ── GOAL CELEBRATION (5 seconds, epic) ──
-  if (view === "match" && showGoal) return (
-    <div style={{ ...base, background: "radial-gradient(ellipse at center, #1B5E20 0%, #0A3D1F 50%, #071a0e 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
+  if (view === "match" && showGoal) {
+    const th = THEMES[theme] || THEMES.football;
+    return (
+    <div style={{ ...base, background: th.celebBg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
       <Confetti />
-      {/* Glowing circle behind */}
       <div style={{ position: "absolute", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(249,168,37,0.25), transparent 70%)", animation: "pulse 1.5s infinite" }} />
       <div style={{ animation: "goalZoom 0.9s both", zIndex: 10 }}>
-        <div style={{ fontSize: 90, marginBottom: 4, filter: "drop-shadow(0 4px 20px rgba(0,0,0,0.3))" }}>⚽</div>
-        <h1 style={{ fontFamily: "'Tajawal',sans-serif", fontWeight: 900, fontSize: 72, color: "#F9A825", animation: "goalGlow 1.5s infinite", margin: "8px 0" }}>هـــدف!</h1>
-        <p style={{ fontSize: 28, color: "rgba(255,255,255,0.9)", fontWeight: 800, animation: "fadeUp 0.5s 0.4s both" }}>GOOOAAL!</p>
+        <div style={{ fontSize: 90, marginBottom: 4, filter: "drop-shadow(0 4px 20px rgba(0,0,0,0.3))" }}>{th.icon}</div>
+        <h1 style={{ fontFamily: "'Tajawal',sans-serif", fontWeight: 900, fontSize: 72, color: "#F9A825", animation: "goalGlow 1.5s infinite", margin: "8px 0" }}>{th.goalText}</h1>
+        <p style={{ fontSize: 28, color: "rgba(255,255,255,0.9)", fontWeight: 800, animation: "fadeUp 0.5s 0.4s both" }}>{th.goalSub}</p>
       </div>
       <div style={{ animation: "fadeUp 0.6s 0.7s both", marginTop: 20, zIndex: 10 }}>
         {profile && <Jersey c={profile.color} n={profile.num} sz={90} />}
-        <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 20, marginTop: 8, fontWeight: 700 }}>{profile?.name} يسجّل! 🎉</p>
+        <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 20, marginTop: 8, fontWeight: 700 }}>{profile?.name} {theme === "climbing" ? "وصل القمة!" : theme === "racing" ? "فاز بالسباق!" : "يسجّل!"} 🎉</p>
       </div>
       <div style={{ animation: "pop 0.5s 1s both", marginTop: 16, background: "rgba(0,0,0,0.4)", borderRadius: 16, padding: "10px 28px", zIndex: 10 }}>
         <span style={{ color: "#fff", fontWeight: 900, fontSize: 36 }}>{goals + 1}</span>
@@ -795,14 +868,14 @@ export default function Miqdam() {
         <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 28 }}>0</span>
       </div>
     </div>
-  );
+  );}
 
   // ── MATCH ──
   if (view === "match" && ayahs.length > 0) {
     const info = EX_LABELS[exType] || EX_LABELS.listen;
-    const pct = Math.min(reps / REPS, 1);
+    const th = THEMES[theme] || THEMES.football;
+    const pct = Math.min(reps / repsTarget, 1);
     const excitement = pct;
-    // Ball position for mini pitch (0 to 100%)
     const ballPct = pct < 0.8 ? pct * 70 / 0.8 : 70 + (pct - 0.8) * 150;
     const clampedBall = Math.min(ballPct, 100);
 
@@ -810,13 +883,13 @@ export default function Miqdam() {
       <div style={{ ...base, background: "#0D1B2A", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <div style={{ maxWidth: 540, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
           
-          {/* ── DARK HEADER: Score + Pitch + Stats ── */}
-          <div style={{ background: "linear-gradient(180deg, #0D1B2A, #1B3A4B)", padding: "12px 16px 0" }}>
+          {/* ── DARK HEADER ── */}
+          <div style={{ background: th.headerBg, padding: "12px 16px 0" }}>
             
             {/* Score bar */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 16 }}>⚽</span>
+                <span style={{ fontSize: 16 }}>{th.icon}</span>
                 <span style={{ fontWeight: 900, fontSize: 20, color: "#fff" }}>{goals}</span>
                 <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>- 0</span>
               </div>
@@ -827,14 +900,14 @@ export default function Miqdam() {
               </div>
               <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 12, padding: "4px 12px" }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: excitement > 0.7 ? "#F9A825" : "#fff" }}>{reps}</span>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}> / {REPS}</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}> / {repsTarget}</span>
               </div>
             </div>
 
             {/* ── Mini pitch progress bar ── */}
             <div style={{ 
               height: 56, borderRadius: 14, overflow: "hidden", position: "relative",
-              background: "linear-gradient(90deg, #1a4d1c, #2d6a30, #1a4d1c)",
+              background: th.bg,
               border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}`,
               transition: "border-color 0.5s",
               marginBottom: 12,
@@ -848,8 +921,8 @@ export default function Miqdam() {
               <div style={{ position: "absolute", left: "50%", top: 4, bottom: 4, width: 1, background: "rgba(255,255,255,0.15)" }} />
               <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 20, height: 20, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)" }} />
               
-              {/* Goal post */}
-              <div style={{ position: "absolute", right: 2, top: 10, bottom: 10, width: 18, border: "2px solid rgba(255,255,255,0.4)", borderLeft: "none", borderRadius: "0 4px 4px 0" }} />
+              {/* Goal/target */}
+              <div style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", fontSize: 22, opacity: 0.7 }}>{th.target}</div>
               
               {/* Progress glow trail */}
               <div style={{ 
@@ -865,15 +938,15 @@ export default function Miqdam() {
                 transition: "left 1s cubic-bezier(0.25,0.46,0.45,0.94)",
                 display: "flex", alignItems: "center", gap: 2, flexDirection: "row",
               }}>
-                {/* Player emoji (behind) */}
-                <span style={{ fontSize: 24, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))", display: "inline-block", transform: "scaleX(-1)" }}>🏃</span>
-                {/* Ball (in front, toward goal) */}
-                <span style={{ fontSize: 16, animation: reps > 0 ? "ballSpin 0.8s linear infinite" : "none" }}>⚽</span>
+                {/* Player/character */}
+                <span style={{ fontSize: 24, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))", display: "inline-block", transform: theme === "football" ? "scaleX(-1)" : "none" }}>{th.emoji}</span>
+                {/* Progress item */}
+                <span style={{ fontSize: 16, animation: reps > 0 ? "ballSpin 0.8s linear infinite" : "none" }}>{th.progressEmoji}</span>
               </div>
 
               {/* Excitement particles near goal */}
               {excitement > 0.8 && (
-                <div style={{ position: "absolute", right: 25, top: "50%", transform: "translateY(-50%)", fontSize: 14, animation: "pulse 0.5s infinite", opacity: 0.7 }}>🔥</div>
+                <div style={{ position: "absolute", right: 25, top: "50%", transform: "translateY(-50%)", fontSize: 14, animation: "pulse 0.5s infinite", opacity: 0.7 }}>{th.exciteEmoji}</div>
               )}
             </div>
           </div>
