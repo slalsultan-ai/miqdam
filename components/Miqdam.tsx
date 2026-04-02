@@ -45,7 +45,9 @@ const BADGES = ["⚽","🏆","⭐","🦁","🦅","🔥","💎","👑"];
 // ── Exercise type by rep (easy → hard, repeating) ──
 // 0-7: listen, 8-14: nextWord, 15-21: blanks, 22-27: order, 28-29: order
 // Exercise type scales with reps target (easy → hard)
-const getExType = (rep, total) => {
+// Young children (< 7) only get listen exercises
+const getExType = (rep, total, childAge) => {
+  if (childAge < 7) return "listen";
   const pct = rep / total;
   if (pct < 0.25) return "listen";
   if (pct < 0.5) return "nextWord";
@@ -548,6 +550,7 @@ export default function Miqdam() {
   const [jNum, setJNum] = useState(10);
   const [jCol, setJCol] = useState(0);
   const [bdg, setBdg] = useState(0);
+  const [age, setAge] = useState(8);
   const [profile, setProfile] = useState(null);
   // Pick
   const [surahNum, setSurahNum] = useState(112);
@@ -640,7 +643,7 @@ export default function Miqdam() {
         else { setCurAyahIdx(i => i + 1); setReps(0); setExType("listen"); }
       }, 5000);
     } else {
-      setExType(getExType(next, repsTarget));
+      setExType(getExType(next, repsTarget, profile?.age || 8));
     }
   };
 
@@ -663,17 +666,33 @@ export default function Miqdam() {
 
   // ── SETUP ──
   if (view === "setup") {
+    const ageEmoji = age <= 5 ? "👶" : age <= 7 ? "🧒" : age <= 10 ? "👦" : "🧑";
     const views = [
+      // Step 0: Age
+      <div key="age" style={{ animation: "fadeUp 0.3s both", textAlign: "center" }}>
+        <div style={{ fontSize: 56, marginBottom: 8 }}>{ageEmoji}</div>
+        <h2 style={{ fontSize: 21, marginBottom: 16 }}>كم عمرك؟</h2>
+        <div style={{ fontSize: 48, fontWeight: 900, color: "#0D7C3D", marginBottom: 12 }}>{age}</div>
+        <input type="range" min={4} max={12} value={age} onChange={e => { sfx("tap"); setAge(+e.target.value); }}
+          style={{ width: "80%", maxWidth: 250, accentColor: "#0D7C3D", height: 8 }} />
+        <div style={{ display: "flex", justifyContent: "space-between", width: "80%", maxWidth: 250, margin: "8px auto 0", fontSize: 13, color: "#999" }}>
+          <span>4</span><span>12</span>
+        </div>
+        {age < 7 && <p style={{ fontSize: 13, color: "#E65100", marginTop: 12, background: "#FFF3E0", padding: "6px 12px", borderRadius: 10, display: "inline-block" }}>🔊 وضع الاستماع والترديد</p>}
+      </div>,
+      // Step 1: Name
       <div key="0" style={{ animation: "fadeUp 0.3s both", textAlign: "center" }}>
         <div style={{ fontSize: 44, marginBottom: 10 }}>⚽</div>
         <h2 style={{ fontSize: 21, marginBottom: 10 }}>اسم اللاعب</h2>
         <input value={pName} onChange={e => setPName(e.target.value)} placeholder="مثال: سلطان" style={{ width: "100%", maxWidth: 260, padding: "12px 18px", fontSize: 20, borderRadius: 14, border: "3px solid #0D7C3D", outline: "none", textAlign: "center", fontFamily: "'Tajawal'", direction: "rtl" }} />
       </div>,
+      // Step 2: Team
       <div key="1" style={{ animation: "fadeUp 0.3s both", textAlign: "center" }}>
         <div style={{ fontSize: 44, marginBottom: 10 }}>🏟️</div>
         <h2 style={{ fontSize: 21, marginBottom: 10 }}>اسم الفريق</h2>
         <input value={tName} onChange={e => setTName(e.target.value)} placeholder="مثال: النسور" style={{ width: "100%", maxWidth: 260, padding: "12px 18px", fontSize: 20, borderRadius: 14, border: "3px solid #0D7C3D", outline: "none", textAlign: "center", fontFamily: "'Tajawal'", direction: "rtl" }} />
       </div>,
+      // Step 3: Jersey
       <div key="2" style={{ animation: "fadeUp 0.3s both", textAlign: "center" }}>
         <Jersey c={JERSEY_COLORS[jCol]} n={jNum} sz={90} />
         <h2 style={{ fontSize: 19, margin: "8px 0 12px" }}>اختر قميصك</h2>
@@ -686,6 +705,7 @@ export default function Miqdam() {
           <Btn onClick={() => setJNum(Math.min(99, jNum + 1))} color="#5a5a6a" style={{ padding: "7px 15px" }}>+</Btn>
         </div>
       </div>,
+      // Step 4: Badge
       <div key="3" style={{ animation: "fadeUp 0.3s both", textAlign: "center" }}>
         <div style={{ fontSize: 52, marginBottom: 6 }}>{BADGES[bdg]}</div>
         <h2 style={{ fontSize: 19, marginBottom: 12 }}>شعار فريقك</h2>
@@ -694,18 +714,19 @@ export default function Miqdam() {
         </div>
       </div>,
     ];
-    const ok = setupStep === 0 ? pName.length > 0 : setupStep === 1 ? tName.length > 0 : true;
-    const done = () => { setProfile({ name: pName, team: tName, num: jNum, color: JERSEY_COLORS[jCol], badge: BADGES[bdg] }); setView("pick"); };
+    const totalSteps = 5;
+    const ok = setupStep === 1 ? pName.length > 0 : setupStep === 2 ? tName.length > 0 : true;
+    const done = () => { setProfile({ name: pName, team: tName, num: jNum, color: JERSEY_COLORS[jCol], badge: BADGES[bdg], age }); setView("pick"); };
 
     return (
       <div style={{ ...base, background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ display: "flex", gap: 5, marginBottom: 26 }}>
-          {[0,1,2,3].map(i => <div key={i} style={{ width: i === setupStep ? 26 : 7, height: 7, borderRadius: 4, background: i <= setupStep ? "#0D7C3D" : "#ddd", transition: "all 0.3s" }} />)}
+          {Array.from({ length: totalSteps }).map((_, i) => <div key={i} style={{ width: i === setupStep ? 26 : 7, height: 7, borderRadius: 4, background: i <= setupStep ? "#0D7C3D" : "#ddd", transition: "all 0.3s" }} />)}
         </div>
         {views[setupStep]}
         <div style={{ marginTop: 26, display: "flex", gap: 10 }}>
           {setupStep > 0 && <Btn onClick={() => setSetupStep(s => s - 1)} color="#5a5a6a">رجوع</Btn>}
-          {setupStep < 3 ? <Btn onClick={() => setSetupStep(s => s + 1)} disabled={!ok}>التالي ←</Btn> : <Btn onClick={done} color="#F9A825" style={{ fontSize: 18, padding: "14px 34px" }}>🏟️ انطلق!</Btn>}
+          {setupStep < totalSteps - 1 ? <Btn onClick={() => setSetupStep(s => s + 1)} disabled={!ok}>التالي ←</Btn> : <Btn onClick={done} color="#F9A825" style={{ fontSize: 18, padding: "14px 34px" }}>🏟️ انطلق!</Btn>}
         </div>
       </div>
     );
