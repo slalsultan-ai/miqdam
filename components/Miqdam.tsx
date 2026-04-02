@@ -861,13 +861,13 @@ export default function Miqdam() {
               
               {/* Player + Ball */}
               <div style={{ 
-                position: "absolute", left: `${Math.max(2, clampedBall - 5)}%`, top: "50%", transform: "translateY(-50%)",
+                position: "absolute", left: `${Math.max(2, clampedBall - 8)}%`, top: "50%", transform: "translateY(-50%)",
                 transition: "left 1s cubic-bezier(0.25,0.46,0.45,0.94)",
-                display: "flex", alignItems: "center", gap: 3,
+                display: "flex", alignItems: "center", gap: 2, flexDirection: "row",
               }}>
-                {/* Player emoji */}
+                {/* Player emoji (behind) */}
                 <span style={{ fontSize: 24, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))", display: "inline-block", transform: "scaleX(-1)" }}>🏃</span>
-                {/* Ball */}
+                {/* Ball (in front, toward goal) */}
                 <span style={{ fontSize: 16, animation: reps > 0 ? "ballSpin 0.8s linear infinite" : "none" }}>⚽</span>
               </div>
 
