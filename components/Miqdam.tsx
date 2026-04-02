@@ -733,7 +733,7 @@ export default function Miqdam() {
         </div>
 
         {/* Card */}
-        <div style={{ flex: 1, background: "#fff", borderRadius: "28px 28px 0 0", padding: "28px 20px", animation: "fadeUp 0.4s 0.1s both", width: "100%", maxWidth: 540 }}>
+        <div style={{ flex: 1, background: "#fff", borderRadius: "28px 28px 0 0", padding: "24px 20px", animation: "fadeUp 0.4s 0.1s both", width: "100%", maxWidth: 540, overflowY: "auto" }}>
           
           {/* Surah selector */}
           <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>السورة</label>
@@ -904,51 +904,145 @@ export default function Miqdam() {
               </div>
             </div>
 
-            {/* ── Mini pitch progress bar ── */}
-            <div style={{ 
-              height: 56, borderRadius: 14, overflow: "hidden", position: "relative",
-              background: th.bg,
-              border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}`,
-              transition: "border-color 0.5s",
-              marginBottom: 12,
-            }}>
-              {/* Grass stripes */}
-              {[0,15,30,45,60,75,90].map((x, i) => (
-                <div key={i} style={{ position: "absolute", left: `${x}%`, top: 0, bottom: 0, width: "7.5%", background: i % 2 === 0 ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)" }} />
-              ))}
-              
-              {/* Center line */}
-              <div style={{ position: "absolute", left: "50%", top: 4, bottom: 4, width: 1, background: "rgba(255,255,255,0.15)" }} />
-              <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 20, height: 20, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)" }} />
-              
-              {/* Goal/target */}
-              <div style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", fontSize: 22, opacity: 0.7 }}>{th.target}</div>
-              
-              {/* Progress glow trail */}
-              <div style={{ 
-                position: "absolute", left: 0, top: 0, bottom: 0, 
-                width: `${clampedBall}%`,
-                background: `linear-gradient(90deg, rgba(249,168,37,0.05), rgba(249,168,37,${0.1 + excitement * 0.15}))`,
-                transition: "width 1s cubic-bezier(0.25,0.46,0.45,0.94)",
-              }} />
-              
-              {/* Player + Ball */}
-              <div style={{ 
-                position: "absolute", left: `${Math.max(2, clampedBall - 8)}%`, top: "50%", transform: "translateY(-50%)",
-                transition: "left 1s cubic-bezier(0.25,0.46,0.45,0.94)",
-                display: "flex", alignItems: "center", gap: 2, flexDirection: "row",
-              }}>
-                {/* Player/character */}
-                <span style={{ fontSize: 24, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))", display: "inline-block", transform: theme === "football" ? "scaleX(-1)" : "none" }}>{th.emoji}</span>
-                {/* Progress item */}
-                <span style={{ fontSize: 16, animation: reps > 0 ? "ballSpin 0.8s linear infinite" : "none" }}>{th.progressEmoji}</span>
-              </div>
+            {/* ── THEMED PROGRESS SCENE ── */}
+            {theme === "football" && (
+              <svg viewBox="0 0 400 80" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
+                {/* Grass */}
+                <rect width="400" height="80" fill="#2d6a30" rx="12" />
+                {[0,50,100,150,200,250,300,350].map((x, i) => <rect key={i} x={x} y="0" width="25" height="80" fill={i % 2 === 0 ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"} />)}
+                {/* Field markings */}
+                <line x1="200" y1="5" x2="200" y2="75" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeDasharray="4,4" />
+                <circle cx="200" cy="40" r="15" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+                {/* Goal */}
+                <rect x="375" y="18" width="20" height="44" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" rx="2" />
+                {[380,385,390].map((x,i) => <line key={i} x1={x} y1="18" x2={x} y2="62" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />)}
+                {[25,32,39,46,53].map((y,i) => <line key={i} x1="375" y1={y} x2="395" y2={y} stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />)}
+                {/* Trail */}
+                <rect x="0" y="0" width={clampedBall * 4} height="80" fill={`rgba(249,168,37,${0.05 + excitement * 0.1})`} rx="12" style={{ transition: "width 1s ease" }} />
+                {/* Player */}
+                <g style={{ transform: `translateX(${Math.max(10, clampedBall * 3.6)}px)`, transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
+                  {/* Shadow */}
+                  <ellipse cx="0" cy="68" rx="12" ry="3" fill="rgba(0,0,0,0.2)" />
+                  {/* Body */}
+                  <rect x="-6" y="35" width="12" height="18" rx="3" fill={profile?.color?.p || "#0D7C3D"} />
+                  <rect x="-5" y="50" width="10" height="5" rx="2" fill="#fff" />
+                  {/* Legs */}
+                  <rect x="-4" y="54" width="3" height="10" rx="1" fill="#FFB74D" />
+                  <rect x="1" y="54" width="3" height="10" rx="1" fill="#FFB74D" />
+                  {/* Head */}
+                  <circle cx="0" cy="30" r="7" fill="#FFB74D" />
+                  <path d="M-5 28 Q0 22 5 28" fill="#3E2723" />
+                  <circle cx="-2" cy="30" r="1" fill="#222" />
+                  <circle cx="3" cy="30" r="1" fill="#222" />
+                </g>
+                {/* Ball */}
+                <g style={{ transform: `translateX(${Math.max(30, clampedBall * 3.6 + 18)}px)`, transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
+                  <circle cx="0" cy="55" r="6" fill="#fff" stroke="#999" strokeWidth="0.8" />
+                  <path d="M-3 53 L0 50 L3 53 L2 57 L-2 57 Z" fill="#333" opacity="0.2" />
+                </g>
+                {excitement > 0.8 && <text x="355" y="44" fontSize="16" style={{ animation: "pulse 0.5s infinite" }}>🔥</text>}
+              </svg>
+            )}
 
-              {/* Excitement particles near goal */}
-              {excitement > 0.8 && (
-                <div style={{ position: "absolute", right: 25, top: "50%", transform: "translateY(-50%)", fontSize: 14, animation: "pulse 0.5s infinite", opacity: 0.7 }}>{th.exciteEmoji}</div>
-              )}
-            </div>
+            {theme === "racing" && (
+              <svg viewBox="0 0 400 90" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
+                {/* Asphalt */}
+                <rect width="400" height="90" fill="#37474F" rx="12" />
+                {/* Road markings */}
+                <rect x="0" y="0" width="400" height="3" fill="#F9A825" opacity="0.4" rx="1" />
+                <rect x="0" y="87" width="400" height="3" fill="#F9A825" opacity="0.4" rx="1" />
+                {/* Lane dividers */}
+                {[0,30,60,90,120,150,180,210,240,270,300,330,360].map((x,i) => <rect key={`d1-${i}`} x={x} y="29" width="18" height="2" fill="rgba(255,255,255,0.3)" rx="1" />)}
+                {[0,30,60,90,120,150,180,210,240,270,300,330,360].map((x,i) => <rect key={`d2-${i}`} x={x} y="59" width="18" height="2" fill="rgba(255,255,255,0.3)" rx="1" />)}
+                {/* Finish line */}
+                {[0,1,2,3,4,5,6,7,8].map((r) => [0,1,2].map((c) => 
+                  <rect key={`f-${r}-${c}`} x={385 + (c * 5)} y={r * 10} width="5" height="10" fill={(r + c) % 2 === 0 ? "#fff" : "#222"} opacity="0.6" />
+                ))}
+                {/* Opponent cars (3 lanes) */}
+                {/* Car 1 - slow */}
+                <g style={{ transform: `translateX(${Math.min(clampedBall * 2.5, clampedBall * 3.2 - 40)}px)`, transition: "transform 1.5s ease" }}>
+                  <rect x="30" y="8" width="24" height="14" rx="4" fill="#C62828" />
+                  <rect x="36" y="6" width="12" height="6" rx="2" fill="#EF5350" opacity="0.7" />
+                  <circle cx="34" cy="22" r="3" fill="#222" /><circle cx="50" cy="22" r="3" fill="#222" />
+                </g>
+                {/* Car 2 - medium */}
+                <g style={{ transform: `translateX(${Math.min(clampedBall * 3, clampedBall * 3.6 - 30)}px)`, transition: "transform 1.3s ease" }}>
+                  <rect x="20" y="38" width="24" height="14" rx="4" fill="#1565C0" />
+                  <rect x="26" y="36" width="12" height="6" rx="2" fill="#42A5F5" opacity="0.7" />
+                  <circle cx="24" cy="52" r="3" fill="#222" /><circle cx="40" cy="52" r="3" fill="#222" />
+                </g>
+                {/* Player car (your car) - lane 3 */}
+                <g style={{ transform: `translateX(${Math.max(10, clampedBall * 3.6)}px)`, transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
+                  <rect x="0" y="66" width="28" height="16" rx="5" fill={profile?.color?.p || "#F9A825"} />
+                  <rect x="6" y="64" width="14" height="7" rx="2" fill={profile?.color?.s || "#fff"} opacity="0.6" />
+                  <circle cx="5" cy="82" r="3.5" fill="#222" stroke="#666" strokeWidth="0.5" />
+                  <circle cx="23" cy="82" r="3.5" fill="#222" stroke="#666" strokeWidth="0.5" />
+                  {/* Speed lines */}
+                  {reps > 0 && <>
+                    <line x1="-8" y1="70" x2="-18" y2="70" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+                    <line x1="-6" y1="76" x2="-14" y2="76" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                  </>}
+                </g>
+                {/* Car 3 - fast opponent */}
+                <g style={{ transform: `translateX(${Math.min(clampedBall * 3.5, clampedBall * 3.6 + 10)}px)`, transition: "transform 1.1s ease" }}>
+                  <rect x="40" y="38" width="22" height="13" rx="4" fill="#6A1B9A" />
+                  <rect x="45" y="36" width="10" height="5" rx="2" fill="#AB47BC" opacity="0.7" />
+                  <circle cx="44" cy="51" r="2.5" fill="#222" /><circle cx="58" cy="51" r="2.5" fill="#222" />
+                </g>
+                {excitement > 0.8 && <text x="348" y="78" fontSize="14" style={{ animation: "pulse 0.4s infinite" }}>💨</text>}
+              </svg>
+            )}
+
+            {theme === "climbing" && (
+              <svg viewBox="0 0 400 100" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
+                {/* Sky gradient */}
+                <defs>
+                  <linearGradient id="mtnSky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#1a237e" />
+                    <stop offset="100%" stopColor="#4FC3F7" />
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="100" fill="url(#mtnSky)" rx="12" />
+                {/* Stars at top */}
+                {[20,60,110,170,230,290,340,380].map((x,i) => <circle key={i} cx={x} cy={5 + (i*3) % 15} r={0.6 + (i%3)*0.3} fill="rgba(255,255,255,0.5)" />)}
+                {/* Mountain shape */}
+                <polygon points="0,100 50,55 100,70 160,35 220,50 280,25 340,15 380,8 400,5 400,100" fill="#4E342E" />
+                <polygon points="0,100 50,60 100,75 160,42 220,55 280,32 340,22 380,15 400,12 400,100" fill="#5D4037" />
+                {/* Snow caps */}
+                <polygon points="340,15 350,10 360,8 380,8 385,12 370,18 355,20" fill="rgba(255,255,255,0.6)" />
+                <polygon points="280,25 290,20 300,22 295,28" fill="rgba(255,255,255,0.4)" />
+                {/* Flag at summit */}
+                <line x1="385" y1="2" x2="385" y2="12" stroke="#fff" strokeWidth="1.5" />
+                <polygon points="385,2 398,5 385,8" fill="#F9A825" />
+                {/* Path markers */}
+                {[60,120,180,240,300,350].map((x,i) => {
+                  const y = 95 - (i+1) * 12;
+                  return <circle key={i} cx={x} cy={y} r="2" fill="rgba(255,255,255,0.2)" />;
+                })}
+                {/* Climber */}
+                <g style={{ 
+                  transform: `translate(${20 + clampedBall * 3.6}px, ${88 - clampedBall * 0.85}px)`,
+                  transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" 
+                }}>
+                  {/* Rope behind */}
+                  <line x1="0" y1="0" x2="-15" y2="10" stroke="#F9A825" strokeWidth="1" opacity="0.5" />
+                  {/* Body */}
+                  <circle cx="0" cy="-8" r="5" fill="#FFB74D" />
+                  <rect x="-4" y="-3" width="8" height="12" rx="2" fill={profile?.color?.p || "#E65100"} />
+                  {/* Backpack */}
+                  <rect x="2" y="-2" width="5" height="8" rx="1.5" fill="#795548" />
+                  {/* Arms reaching up */}
+                  <line x1="-4" y1="0" x2="-8" y2="-8" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="4" y1="0" x2="8" y2="-6" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                  {/* Legs */}
+                  <line x1="-2" y1="9" x2="-4" y2="15" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="2" y1="9" x2="5" y2="14" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                </g>
+                {/* Progress glow */}
+                <rect x="0" y="0" width={clampedBall * 4} height="100" fill={`rgba(255,255,255,${0.02 + excitement * 0.04})`} rx="12" style={{ transition: "width 1s ease" }} />
+                {excitement > 0.8 && <text x="365" y="20" fontSize="14" style={{ animation: "pulse 0.5s infinite" }}>⭐</text>}
+              </svg>
+            )}
           </div>
 
           {/* ── LIGHT BODY: Exercise type + Ayah + Exercise ── */}
