@@ -46,8 +46,14 @@ const BADGES = ["⚽","🏆","⭐","🦁","🦅","🔥","💎","👑"];
 // 0-7: listen, 8-14: nextWord, 15-21: blanks, 22-27: order, 28-29: order
 // Exercise type scales with reps target (easy → hard)
 // Young children (< 7) only get listen exercises
-const getExType = (rep, total, childAge) => {
-  if (childAge < 7) return "listen";
+// Single-word ayahs (like والضحى) get listen only
+const getExType = (rep, total, childAge, wordCount = 99) => {
+  if (childAge < 7 || wordCount <= 1) return "listen";
+  if (wordCount === 2) {
+    // 2 words: only listen + nextWord (no blanks/order)
+    const pct = rep / total;
+    return pct < 0.5 ? "listen" : "nextWord";
+  }
   const pct = rep / total;
   if (pct < 0.25) return "listen";
   if (pct < 0.5) return "nextWord";
@@ -99,7 +105,22 @@ const THEMES = {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{overscroll-behavior:none}
+html,body{overscroll-behavior:none;background:#111}
+/* Phone frame on desktop */
+@media (min-width: 600px) {
+  #miqdam-root {
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    box-shadow: 0 0 60px rgba(0,0,0,0.4);
+    border-radius: 0;
+    overflow: hidden;
+  }
+}
+@media (max-width: 599px) {
+  #miqdam-root { width: 100%; min-height: 100vh; }
+}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes pop{0%{transform:scale(0)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
@@ -643,17 +664,18 @@ export default function Miqdam() {
         else { setCurAyahIdx(i => i + 1); setReps(0); setExType("listen"); }
       }, 5000);
     } else {
-      setExType(getExType(next, repsTarget, profile?.age || 8));
+      setExType(getExType(next, repsTarget, profile?.age || 8, curAyah.split(" ").length));
     }
   };
 
   useEffect(() => { const s = document.createElement("style"); s.textContent = CSS; document.head.appendChild(s); return () => s.remove(); }, []);
 
-  const base = { fontFamily: "'Tajawal',sans-serif", minHeight: "100vh", color: "#1a1a2e", overflow: "hidden" };
+  const base: any = { fontFamily: "'Tajawal',sans-serif", minHeight: "100vh", color: "#1a1a2e", overflow: "hidden" };
+
 
   // ── WELCOME ──
   if (view === "welcome") return (
-    <div style={{ ...base, background: "linear-gradient(150deg, #0A3D1F 0%, #0D7C3D 50%, #1B5E20 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24, position: "relative", overflow: "hidden" }}>
+    <div id="miqdam-root" style={{ ...base, background: "linear-gradient(150deg, #0A3D1F 0%, #0D7C3D 50%, #1B5E20 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24, position: "relative", overflow: "hidden" }}>
       {/* Ambient glow */}
       <div style={{ position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(249,168,37,0.08), transparent 60%)", pointerEvents: "none" }} />
       
@@ -748,7 +770,7 @@ export default function Miqdam() {
     const done = () => { setProfile({ name: pName, team: tName, num: jNum, color: JERSEY_COLORS[jCol], badge: BADGES[bdg], age }); setView("pick"); };
 
     return (
-      <div style={{ ...base, background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div id="miqdam-root" style={{ ...base, background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ display: "flex", gap: 5, marginBottom: 26 }}>
           {Array.from({ length: totalSteps }).map((_, i) => <div key={i} style={{ width: i === setupStep ? 26 : 7, height: 7, borderRadius: 4, background: i <= setupStep ? "#0D7C3D" : "#ddd", transition: "all 0.3s" }} />)}
         </div>
@@ -764,133 +786,106 @@ export default function Miqdam() {
   // ── PICK SURAH ──
   if (view === "pick") {
     const maxAy = SURAH_AYAH_COUNT[surahNum - 1] || 7;
+    const th = THEMES[theme] || THEMES.football;
     
     return (
-      <div style={{ ...base, background: "linear-gradient(180deg, #0D7C3D 0%, #1B5E20 40%, #0A3D1F 100%)", display: "flex", flexDirection: "column", minHeight: "100vh", alignItems: "center" }}>
-        {/* Header */}
-        <div style={{ maxWidth: 540, width: "100%", padding: "20px 20px 0", animation: "fadeUp 0.3s both" }}>
-          {profile && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-              <Jersey c={profile.color} n={profile.num} sz={44} />
-              <div>
-                <div style={{ fontWeight: 800, fontSize: 16, color: "#fff" }}>{profile.name}</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{profile.badge} {profile.team}</div>
-              </div>
+      <div style={{ ...base, background: "#f5f5f0", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        {/* Compact header */}
+        <div style={{ background: "linear-gradient(135deg, #0D7C3D, #1B5E20)", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {profile && <Jersey c={profile.color} n={profile.num} sz={36} />}
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 15, color: "#fff" }}>{profile?.name || "لاعب"}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{profile?.badge} {profile?.team}</div>
             </div>
-          )}
-          <h2 style={{ fontSize: 22, fontWeight: 900, color: "#fff", textAlign: "center", marginBottom: 4 }}>🚀 جهّز مغامرتك</h2>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textAlign: "center", marginBottom: 20 }}>حدد السورة والآيات ونوع المغامرة</p>
+          </div>
+          <div style={{ color: "#fff", fontWeight: 800, fontSize: 16 }}>🚀 جهّز مغامرتك</div>
         </div>
 
-        {/* Card */}
-        <div style={{ flex: 1, background: "#fff", borderRadius: "28px 28px 0 0", padding: "24px 20px", animation: "fadeUp 0.4s 0.1s both", width: "100%", maxWidth: 540, overflowY: "auto" }}>
-          
-          {/* Surah selector */}
-          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>السورة</label>
-          <div style={{ position: "relative", marginBottom: 20 }}>
+        {/* Content */}
+        <div style={{ flex: 1, padding: "16px 16px 100px", maxWidth: 600, margin: "0 auto", width: "100%", overflowY: "auto" }}>
+          {/* Surah + Ayahs */}
+          <div style={{ background: "#fff", borderRadius: 20, padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 800, color: "#1a1a2e", marginBottom: 6 }}>📖 السورة</label>
             <select value={surahNum} onChange={e => { const v = +e.target.value; setSurahNum(v); setAyFrom(1); setAyTo(SURAH_AYAH_COUNT[v - 1]); }}
-              style={{
-                width: "100%", padding: "14px 16px", borderRadius: 16,
-                border: "2px solid #E0E0E0", fontSize: 18, fontFamily: "'Tajawal'",
-                direction: "rtl", background: "#FAFAFA", color: "#1a1a2e",
-                appearance: "auto" as any, WebkitAppearance: "auto" as any, maxHeight: 48,
-                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%235a5a6a'/%3E%3C/svg%3E\")",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "16px center",
-                cursor: "pointer",
-              }}>
-              {SURAH_NAMES.map((n, i) => (
-                <option key={i} value={i + 1}>
-                  {n} ({i + 1}) — {SURAH_AYAH_COUNT[i]} آية {QURAN_DATA[i + 1] ? "" : " 🌐"}
-                </option>
-              ))}
+              style={{ width: "100%", padding: "12px 14px", borderRadius: 14, border: "2px solid #E0E0E0", fontSize: 16, fontFamily: "'Tajawal'", direction: "rtl", background: "#FAFAFA", color: "#1a1a2e", appearance: "auto" as any, WebkitAppearance: "auto" as any, marginBottom: 12, cursor: "pointer" }}>
+              {SURAH_NAMES.map((n, i) => <option key={i} value={i + 1}>{n} ({i + 1}) — {SURAH_AYAH_COUNT[i]} آية{QURAN_DATA[i + 1] ? "" : " 🌐"}</option>)}
             </select>
-          </div>
-
-          {/* Ayah range - side by side */}
-          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>نطاق الآيات</label>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-            <div style={{ flex: 1, background: "#FAFAFA", borderRadius: 16, border: "2px solid #E0E0E0", padding: "10px 8px", textAlign: "center" }}>
-              <div style={{ fontSize: 11, color: "#999", marginBottom: 4, fontWeight: 600 }}>من آية</div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <button onClick={() => setAyFrom(Math.max(1, ayFrom - 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>−</button>
-                <span style={{ fontSize: 22, fontWeight: 900, minWidth: 36, color: "#1a1a2e" }}>{ayFrom}</span>
-                <button onClick={() => setAyFrom(Math.min(ayTo, ayFrom + 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>+</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ flex: 1, background: "#FAFAFA", borderRadius: 12, border: "1px solid #E0E0E0", padding: "8px 6px", textAlign: "center" }}>
+                <div style={{ fontSize: 10, color: "#999", marginBottom: 2, fontWeight: 600 }}>من آية</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <button onClick={() => setAyFrom(Math.max(1, ayFrom - 1))} style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: "#E8F5E9", fontSize: 16, cursor: "pointer", fontWeight: 800, color: "#0D7C3D", fontFamily: "'Tajawal'" }}>−</button>
+                  <span style={{ fontSize: 20, fontWeight: 900, minWidth: 30, color: "#1a1a2e" }}>{ayFrom}</span>
+                  <button onClick={() => setAyFrom(Math.min(ayTo, ayFrom + 1))} style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: "#E8F5E9", fontSize: 16, cursor: "pointer", fontWeight: 800, color: "#0D7C3D", fontFamily: "'Tajawal'" }}>+</button>
+                </div>
               </div>
-            </div>
-            
-            <div style={{ fontSize: 20, color: "#ccc", fontWeight: 300 }}>→</div>
-            
-            <div style={{ flex: 1, background: "#FAFAFA", borderRadius: 16, border: "2px solid #E0E0E0", padding: "10px 8px", textAlign: "center" }}>
-              <div style={{ fontSize: 11, color: "#999", marginBottom: 4, fontWeight: 600 }}>إلى آية</div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <button onClick={() => setAyTo(Math.max(ayFrom, ayTo - 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>−</button>
-                <span style={{ fontSize: 22, fontWeight: 900, minWidth: 36, color: "#1a1a2e" }}>{ayTo}</span>
-                <button onClick={() => setAyTo(Math.min(maxAy, ayTo + 1))} style={{ width: 32, height: 32, borderRadius: 10, border: "none", background: "#E8F5E9", fontSize: 18, cursor: "pointer", fontWeight: 800, color: "#0D7C3D" }}>+</button>
+              <span style={{ color: "#ccc", fontSize: 16 }}>→</span>
+              <div style={{ flex: 1, background: "#FAFAFA", borderRadius: 12, border: "1px solid #E0E0E0", padding: "8px 6px", textAlign: "center" }}>
+                <div style={{ fontSize: 10, color: "#999", marginBottom: 2, fontWeight: 600 }}>إلى آية</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <button onClick={() => setAyTo(Math.max(ayFrom, ayTo - 1))} style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: "#E8F5E9", fontSize: 16, cursor: "pointer", fontWeight: 800, color: "#0D7C3D", fontFamily: "'Tajawal'" }}>−</button>
+                  <span style={{ fontSize: 20, fontWeight: 900, minWidth: 30, color: "#1a1a2e" }}>{ayTo}</span>
+                  <button onClick={() => setAyTo(Math.min(maxAy, ayTo + 1))} style={{ width: 28, height: 28, borderRadius: 8, border: "none", background: "#E8F5E9", fontSize: 16, cursor: "pointer", fontWeight: 800, color: "#0D7C3D", fontFamily: "'Tajawal'" }}>+</button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Reps per ayah */}
-          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>عدد التكرار لكل آية</label>
-          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-            {[10, 20, 30, 50].map(n => (
-              <button key={n} onClick={() => { sfx("tap"); setRepsTarget(n); }}
-                style={{
-                  flex: 1, padding: "10px 0", borderRadius: 14, fontSize: 18, fontWeight: 800,
-                  border: repsTarget === n ? "3px solid #0D7C3D" : "3px solid #E0E0E0",
-                  background: repsTarget === n ? "#E8F5E9" : "#FAFAFA",
-                  color: repsTarget === n ? "#0D7C3D" : "#999",
-                  cursor: "pointer", transition: "all 0.2s",
-                  fontFamily: "'Tajawal',sans-serif",
-                }}>{n}</button>
-            ))}
+          {/* Reps + Theme side by side */}
+          <div style={{ display: "flex", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 180px", background: "#fff", borderRadius: 20, padding: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>🔄 التكرار</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[10, 20, 30, 50].map(n => (
+                  <button key={n} onClick={() => { sfx("tap"); setRepsTarget(n); }}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 16, fontWeight: 800, border: repsTarget === n ? `2px solid ${th.accent}` : "2px solid #E0E0E0", background: repsTarget === n ? `${th.accent}15` : "#FAFAFA", color: repsTarget === n ? th.accent : "#999", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Tajawal',sans-serif" }}>{n}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: "1 1 180px", background: "#fff", borderRadius: 20, padding: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>🎮 المغامرة</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                {Object.entries(THEMES).map(([key, t]) => (
+                  <button key={key} onClick={() => { sfx("tap"); setTheme(key); }}
+                    style={{ flex: 1, padding: "8px 4px", borderRadius: 12, textAlign: "center", border: theme === key ? `2px solid ${t.accent}` : "2px solid #E0E0E0", background: theme === key ? `${t.accent}12` : "#FAFAFA", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Tajawal',sans-serif" }}>
+                    <div style={{ fontSize: 22 }}>{t.icon}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: theme === key ? t.accent : "#999", marginTop: 2 }}>{t.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Theme picker */}
-          <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>اختر الثيم</label>
-          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-            {Object.entries(THEMES).map(([key, t]) => (
-              <button key={key} onClick={() => { sfx("tap"); setTheme(key); }}
-                style={{
-                  flex: 1, padding: "12px 8px", borderRadius: 16, textAlign: "center",
-                  border: theme === key ? `3px solid ${t.accent}` : "3px solid #E0E0E0",
-                  background: theme === key ? `${t.accent}11` : "#FAFAFA",
-                  cursor: "pointer", transition: "all 0.2s",
-                  fontFamily: "'Tajawal',sans-serif",
-                }}>
-                <div style={{ fontSize: 28 }}>{t.icon}</div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: theme === key ? t.accent : "#999", marginTop: 4 }}>{t.name}</div>
-              </button>
-            ))}
-          </div>
-
-          {/* Match summary */}
-          <div style={{ background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)", borderRadius: 18, padding: 16, marginBottom: 20, direction: "rtl", border: "1px solid rgba(13,124,61,0.1)" }}>
+          {/* Summary */}
+          <div style={{ background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)", borderRadius: 16, padding: 14, marginBottom: 12, direction: "rtl", border: "1px solid rgba(13,124,61,0.08)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <p style={{ fontSize: 16, fontWeight: 800, color: "#0A5C2D" }}>{THEMES[theme].icon} {SURAH_NAMES[surahNum - 1]}</p>
-                <p style={{ fontSize: 13, color: "#2E7D32", marginTop: 2 }}>الآيات {ayFrom} إلى {ayTo} • {repsTarget} تكرار</p>
+                <p style={{ fontSize: 15, fontWeight: 800, color: "#0A5C2D" }}>{th.icon} {SURAH_NAMES[surahNum - 1]}</p>
+                <p style={{ fontSize: 12, color: "#2E7D32", marginTop: 2 }}>آية {ayFrom}–{ayTo} • {repsTarget} تكرار</p>
               </div>
-              <div style={{ textAlign: "center", background: "#fff", borderRadius: 14, padding: "8px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ fontSize: 24, fontWeight: 900, color: "#0D7C3D" }}>{ayTo - ayFrom + 1}</div>
-                <div style={{ fontSize: 11, color: "#999" }}>{THEMES[theme].actionText(ayTo - ayFrom + 1).split(" ")[1]}</div>
+              <div style={{ textAlign: "center", background: "#fff", borderRadius: 12, padding: "6px 14px" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: th.accent }}>{ayTo - ayFrom + 1}</div>
+                <div style={{ fontSize: 10, color: "#999" }}>{theme === "racing" ? "سباق" : theme === "climbing" ? "قمة" : "هجمة"}</div>
               </div>
             </div>
           </div>
 
-          {/* Error */}
           {fetchError && (
-            <div style={{ background: "#FFEBEE", borderRadius: 14, padding: 13, marginBottom: 14, direction: "rtl" }}>
-              <p style={{ fontSize: 14, color: "#C62828" }}>⚠️ {fetchError}</p>
+            <div style={{ background: "#FFEBEE", borderRadius: 14, padding: 12, marginBottom: 12, direction: "rtl" }}>
+              <p style={{ fontSize: 13, color: "#C62828" }}>⚠️ {fetchError}</p>
             </div>
           )}
+        </div>
 
-          {/* Start button */}
-          <Btn onClick={startMatch} color="#0D7C3D" full disabled={loading}
-            style={{ fontSize: 20, padding: 16, borderRadius: 18, animation: loading ? "none" : "pulse 2.5s infinite" }}>
-            {loading ? "⏳ جاري التحميل..." : "⚽ انطلق للمباراة!"}
-          </Btn>
+        {/* Sticky start button */}
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "12px 16px", background: "linear-gradient(180deg, transparent, #f5f5f0 30%)", display: "flex", justifyContent: "center" }}>
+          <div style={{ maxWidth: 600, width: "100%" }}>
+            <Btn onClick={startMatch} color={th.accent} full disabled={loading}
+              style={{ fontSize: 19, padding: 16, borderRadius: 18, animation: loading ? "none" : "pulse 2.5s infinite" }}>
+              {loading ? "⏳ جاري التحميل..." : `${th.icon} انطلق!`}
+            </Btn>
+          </div>
         </div>
       </div>
     );
@@ -900,7 +895,7 @@ export default function Miqdam() {
   if (view === "match" && showGoal) {
     const th = THEMES[theme] || THEMES.football;
     return (
-    <div style={{ ...base, background: th.celebBg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
+    <div id="miqdam-root" style={{ ...base, background: th.celebBg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
       <Confetti />
       <div style={{ position: "absolute", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(249,168,37,0.25), transparent 70%)", animation: "pulse 1.5s infinite" }} />
       <div style={{ animation: "goalZoom 0.9s both", zIndex: 10 }}>
@@ -930,8 +925,8 @@ export default function Miqdam() {
     const clampedBall = Math.min(ballPct, 100);
 
     return (
-      <div style={{ ...base, background: "#0D1B2A", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <div style={{ maxWidth: 540, margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <div id="miqdam-root" style={{ ...base, background: "#0D1B2A", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <div style={{ margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
           
           {/* ── DARK HEADER ── */}
           <div style={{ background: th.headerBg, padding: "12px 16px 0" }}>
@@ -1133,8 +1128,8 @@ export default function Miqdam() {
     const th = THEMES[theme] || THEMES.football;
     const endText = theme === "racing" ? "نهاية السباق" : theme === "climbing" ? "نهاية الرحلة" : "نهاية المباراة";
     return (
-      <div style={{ ...base, background: "linear-gradient(180deg,#1a1a2e,#0d1b3e)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center" }}>
-        <div style={{ maxWidth: 540, width: "100%" }}>
+      <div id="miqdam-root" style={{ ...base, background: "linear-gradient(180deg,#1a1a2e,#0d1b3e)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center" }}>
+        <div style={{ width: "100%" }}>
           <div style={{ animation: "fadeUp 0.3s both" }}>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", letterSpacing: 3, marginBottom: 6 }}>{endText}</div>
             <div style={{ fontSize: 36, marginBottom: 8 }}>{th.icon}</div>
