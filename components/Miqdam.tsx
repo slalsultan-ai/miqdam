@@ -105,22 +105,7 @@ const THEMES = {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{overscroll-behavior:none;background:#111}
-/* Phone frame on desktop */
-@media (min-width: 600px) {
-  #miqdam-root {
-    max-width: 420px;
-    margin: 0 auto;
-    min-height: 100vh;
-    position: relative;
-    box-shadow: 0 0 60px rgba(0,0,0,0.4);
-    border-radius: 0;
-    overflow: hidden;
-  }
-}
-@media (max-width: 599px) {
-  #miqdam-root { width: 100%; min-height: 100vh; }
-}
+html,body{overscroll-behavior:none}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes pop{0%{transform:scale(0)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
