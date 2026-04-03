@@ -653,13 +653,42 @@ export default function Miqdam() {
 
   // ── WELCOME ──
   if (view === "welcome") return (
-    <div style={{ ...base, background: "linear-gradient(150deg, #0D7C3D 0%, #1B5E20 50%, #0A3D1F 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24 }}>
-      <div style={{ position: "absolute", top: -60, right: "10%", width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle,rgba(249,168,37,0.1),transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ animation: "pop 0.6s both", fontSize: 72, marginBottom: 10 }}>⚽</div>
-      <h1 style={{ fontFamily: "'Tajawal',sans-serif", fontWeight: 900, fontSize: 54, color: "#fff", animation: "fadeUp 0.5s 0.1s both", textShadow: "0 3px 20px rgba(0,0,0,0.2)" }}>مِقدام</h1>
-      <p style={{ fontSize: 17, color: "rgba(255,255,255,0.7)", animation: "fadeUp 0.5s 0.25s both", marginBottom: 44, maxWidth: 260 }}>حوّل حفظ القرآن إلى مباراة حماسية!</p>
-      <div style={{ animation: "fadeUp 0.5s 0.4s both" }}>
-        <Btn onClick={() => setView("setup")} color="#F9A825" style={{ fontSize: 20, padding: "16px 44px" }}>🏟️ ابدأ المغامرة</Btn>
+    <div style={{ ...base, background: "linear-gradient(150deg, #0A3D1F 0%, #0D7C3D 50%, #1B5E20 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 24, position: "relative", overflow: "hidden" }}>
+      {/* Ambient glow */}
+      <div style={{ position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(249,168,37,0.08), transparent 60%)", pointerEvents: "none" }} />
+      
+      {/* Logo */}
+      <div style={{ animation: "fadeUp 0.5s both", marginBottom: 8 }}>
+        <div style={{ fontSize: 20, color: "rgba(255,255,255,0.4)", letterSpacing: 4, marginBottom: 12 }}>بِسْمِ اللَّهِ</div>
+      </div>
+      <h1 style={{ fontFamily: "'Tajawal',sans-serif", fontWeight: 900, fontSize: 52, color: "#fff", animation: "fadeUp 0.5s 0.1s both", textShadow: "0 3px 20px rgba(0,0,0,0.2)", marginBottom: 6 }}>مِقدام</h1>
+      <p style={{ fontSize: 16, color: "rgba(255,255,255,0.6)", animation: "fadeUp 0.5s 0.2s both", marginBottom: 32, maxWidth: 280 }}>حوّل حفظ القرآن إلى مغامرة ممتعة!</p>
+      
+      {/* Adventure icons */}
+      <div style={{ display: "flex", gap: 20, marginBottom: 36, animation: "fadeUp 0.5s 0.3s both" }}>
+        {[
+          { emoji: "⚽", label: "كرة قدم", delay: 0 },
+          { emoji: "🏎️", label: "سباق", delay: 0.15 },
+          { emoji: "⛰️", label: "تسلق", delay: 0.3 },
+        ].map((t, i) => (
+          <div key={i} style={{ 
+            textAlign: "center", animation: `pop 0.4s ${0.4 + t.delay}s both`,
+          }}>
+            <div style={{ 
+              width: 60, height: 60, borderRadius: 18, 
+              background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 28, marginBottom: 6,
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}>{t.emoji}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 600 }}>{t.label}</div>
+          </div>
+        ))}
+      </div>
+      
+      {/* CTA */}
+      <div style={{ animation: "fadeUp 0.5s 0.6s both" }}>
+        <Btn onClick={() => setView("setup")} color="#F9A825" style={{ fontSize: 20, padding: "16px 48px", borderRadius: 20 }}>🚀 ابدأ المغامرة</Btn>
       </div>
     </div>
   );
@@ -749,8 +778,8 @@ export default function Miqdam() {
               </div>
             </div>
           )}
-          <h2 style={{ fontSize: 24, fontWeight: 900, color: "#fff", textAlign: "center", marginBottom: 4 }}>📖 اختر مباراة اليوم</h2>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", textAlign: "center", marginBottom: 20 }}>حدد السورة والآيات اللي تبي تحفظها</p>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: "#fff", textAlign: "center", marginBottom: 4 }}>🚀 جهّز مغامرتك</h2>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textAlign: "center", marginBottom: 20 }}>حدد السورة والآيات ونوع المغامرة</p>
         </div>
 
         {/* Card */}
@@ -1101,29 +1130,34 @@ export default function Miqdam() {
   if (view === "result") {
     const acc = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 100;
     const stars = acc >= 90 ? 3 : acc >= 70 ? 2 : 1;
+    const th = THEMES[theme] || THEMES.football;
+    const endText = theme === "racing" ? "نهاية السباق" : theme === "climbing" ? "نهاية الرحلة" : "نهاية المباراة";
     return (
       <div style={{ ...base, background: "linear-gradient(180deg,#1a1a2e,#0d1b3e)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center" }}>
-        <div style={{ animation: "fadeUp 0.3s both" }}>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", letterSpacing: 3, marginBottom: 10 }}>نهاية المباراة</div>
-        </div>
-        <div style={{ display: "flex", gap: 7, margin: "16px 0", justifyContent: "center" }}>
-          {[0,1,2].map(i => <span key={i} style={{ fontSize: 38, animation: i < stars ? `starSpin 0.5s ${i * 0.2}s both` : "none", filter: i < stars ? "none" : "grayscale(1) opacity(0.15)" }}>⭐</span>)}
-        </div>
-        <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: 20, width: "100%", maxWidth: 310, animation: "fadeUp 0.35s 0.15s both", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 18 }}>
-          <div style={{ fontSize: 44, fontWeight: 900, color: "#fff", marginBottom: 2 }}>{goals} - 0</div>
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>سورة {SURAH_NAMES[surahNum - 1]}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
-            {[["🎯", `${acc}%`, "دقة"],["✅", `${totalC}`, "صحيحة"]].map(([ic, v, l], i) => (
-              <div key={i}><div style={{ fontSize: 20 }}>{ic}</div><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{v}</div><div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{l}</div></div>
-            ))}
+        <div style={{ maxWidth: 540, width: "100%" }}>
+          <div style={{ animation: "fadeUp 0.3s both" }}>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", letterSpacing: 3, marginBottom: 6 }}>{endText}</div>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>{th.icon}</div>
           </div>
-        </div>
-        <div style={{ animation: "fadeUp 0.35s 0.3s both", background: "linear-gradient(135deg,#F9A825,#FFB300)", borderRadius: 16, padding: 13, width: "100%", maxWidth: 310, marginBottom: 18 }}>
-          <p style={{ fontSize: 17, fontWeight: 800, color: "#1a1a2e" }}>{stars === 3 ? "🌟 أداء أسطوري!" : stars === 2 ? "💪 أداء رائع!" : "👍 أحسنت!"}</p>
-        </div>
-        <div style={{ display: "flex", gap: 10, animation: "fadeUp 0.35s 0.45s both" }}>
-          <Btn onClick={() => setView("pick")} color="rgba(255,255,255,0.1)" style={{ border: "1px solid rgba(255,255,255,0.12)", boxShadow: "none" }}>📖 مباراة جديدة</Btn>
-          <Btn onClick={startMatch} color="#0D7C3D">⚽ إعادة</Btn>
+          <div style={{ display: "flex", gap: 7, margin: "12px 0", justifyContent: "center" }}>
+            {[0,1,2].map(i => <span key={i} style={{ fontSize: 38, animation: i < stars ? `starSpin 0.5s ${i * 0.2}s both` : "none", filter: i < stars ? "none" : "grayscale(1) opacity(0.15)" }}>⭐</span>)}
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: 20, width: "100%", maxWidth: 310, margin: "0 auto", animation: "fadeUp 0.35s 0.15s both", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 18 }}>
+            <div style={{ fontSize: 44, fontWeight: 900, color: "#fff", marginBottom: 2 }}>{goals} - 0</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>سورة {SURAH_NAMES[surahNum - 1]}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
+              {[["🎯", `${acc}%`, "دقة"],["✅", `${totalC}`, "صحيحة"]].map(([ic, v, l], i) => (
+                <div key={i}><div style={{ fontSize: 20 }}>{ic}</div><div style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>{v}</div><div style={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}>{l}</div></div>
+              ))}
+            </div>
+          </div>
+          <div style={{ animation: "fadeUp 0.35s 0.3s both", background: "linear-gradient(135deg,#F9A825,#FFB300)", borderRadius: 16, padding: 13, width: "100%", maxWidth: 310, margin: "0 auto 18px", }}>
+            <p style={{ fontSize: 17, fontWeight: 800, color: "#1a1a2e" }}>{stars === 3 ? "🌟 أداء أسطوري!" : stars === 2 ? "💪 أداء رائع!" : "👍 أحسنت!"}</p>
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", animation: "fadeUp 0.35s 0.45s both" }}>
+            <Btn onClick={() => setView("pick")} color="rgba(255,255,255,0.1)" style={{ border: "1px solid rgba(255,255,255,0.12)", boxShadow: "none" }}>🚀 مغامرة جديدة</Btn>
+            <Btn onClick={startMatch} color={th.accent}>{th.icon} إعادة</Btn>
+          </div>
         </div>
       </div>
     );
