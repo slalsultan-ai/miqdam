@@ -78,6 +78,7 @@ const THEMES = {
     celebBg: "radial-gradient(ellipse at center, #1B5E20 0%, #0A3D1F 50%, #071a0e 100%)",
     accent: "#0D7C3D",
     actionText: (n) => `${n} هجمة`,
+    phase1: "الشوط الأول", phase2: "الشوط الثاني", phaseEnd: "نهاية المباراة",
   },
   racing: {
     name: "سباق سيارات", icon: "🏎️", emoji: "🏎️", target: "🏁",
@@ -88,6 +89,7 @@ const THEMES = {
     celebBg: "radial-gradient(ellipse at center, #1a1a2e 0%, #0d0d1a 50%, #050510 100%)",
     accent: "#E65100",
     actionText: (n) => `${n} سباق`,
+    phase1: "الجولة الأولى", phase2: "الجولة النهائية", phaseEnd: "نهاية السباق",
   },
   climbing: {
     name: "تسلق جبل", icon: "⛰️", emoji: "🧗", target: "🏔️",
@@ -98,6 +100,7 @@ const THEMES = {
     celebBg: "radial-gradient(ellipse at center, #1B2631 0%, #0d1a26 50%, #050d14 100%)",
     accent: "#00838F",
     actionText: (n) => `${n} قمة`,
+    phase1: "الصعود", phase2: "القمة", phaseEnd: "نهاية الرحلة",
   },
 };
 
@@ -544,6 +547,129 @@ function ExOrder({ ayah, onDone }) {
   );
 }
 
+// ── REVIEW EXERCISES (connecting ayahs together) ──
+
+// Review 1: What's the next ayah?
+function ExNextAyah({ ayahs, onDone }: any) {
+  const idx = useMemo(() => Math.floor(Math.random() * (ayahs.length - 1)), [ayahs]);
+  const shown = ayahs[idx];
+  const correct = ayahs[idx + 1];
+  const options = useMemo(() => {
+    const others = ayahs.filter((_: any, i: number) => i !== idx + 1).slice(0, 2);
+    return shuffle([correct, ...others]);
+  }, [correct, ayahs, idx]);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [err, setErr] = useState(false);
+
+  const pick = (a: string) => {
+    if (picked) return;
+    if (a === correct) { sfx("correct"); setPicked(a); setTimeout(() => onDone(1, 1), 500); }
+    else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, animation: "fadeUp 0.35s both" }}>
+      <div style={{ textAlign: "center", color: "#5a5a6a", fontSize: 15, fontWeight: 600 }}>📖 ما الآية التي تلي هذه الآية؟</div>
+      <AyahBox text={shown} size={22} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {options.map((o: string, i: number) => (
+          <button key={i} onClick={() => pick(o)} disabled={!!picked}
+            style={{
+              padding: "12px 16px", borderRadius: 14, fontSize: 17, fontFamily: "'Amiri Quran',serif",
+              direction: "rtl", textAlign: "right", lineHeight: 1.8,
+              background: picked === o && o === correct ? "#E8F5E9" : "#fff",
+              border: picked === o && o === correct ? "3px solid #0D7C3D" : "3px solid #eee",
+              cursor: picked ? "default" : "pointer", transition: "all 0.2s",
+              animation: err && !picked ? "shake 0.3s" : "",
+            }}>{o}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Review 2: Order all ayahs
+function ExOrderAyahs({ ayahs, onDone }: any) {
+  const shuffled = useMemo(() => shuffle(ayahs.map((a: string, i: number) => ({ a, i }))), [ayahs]);
+  const [placed, setPlaced] = useState<any[]>([]);
+  const [err, setErr] = useState(false);
+
+  const pick = (item: any) => {
+    if (item.i === placed.length) {
+      sfx("correct"); const np = [...placed, item]; setPlaced(np); setErr(false);
+      if (np.length === ayahs.length) setTimeout(() => onDone(1, 1), 500);
+    } else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, animation: "fadeUp 0.35s both" }}>
+      <div style={{ textAlign: "center", color: "#5a5a6a", fontSize: 15, fontWeight: 600 }}>📋 رتّب الآيات بالترتيب الصحيح</div>
+      <div style={{ background: "rgba(255,255,255,0.7)", borderRadius: 16, padding: 12, minHeight: 48, display: "flex", flexDirection: "column", gap: 6, direction: "rtl", border: "2px dashed #0D7C3D" }}>
+        {placed.length === 0 && <span style={{ color: "#ccc", fontSize: 13, textAlign: "center" }}>ابدأ بالآية الأولى...</span>}
+        {placed.map((item: any, i: number) => (
+          <div key={i} style={{ background: "#0D7C3D", color: "#fff", padding: "8px 12px", borderRadius: 10, fontSize: 15, fontFamily: "'Amiri Quran',serif", animation: "pop 0.2s both", lineHeight: 1.8 }}>
+            <span style={{ opacity: 0.5, fontSize: 12, marginLeft: 6 }}>{i + 1}.</span> {item.a}
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {shuffled.filter((s: any) => !placed.find((p: any) => p.i === s.i)).map((item: any, i: number) => (
+          <button key={i} onClick={() => pick(item)} style={{
+            background: "#fff", border: err ? "2px solid #C62828" : "2px solid #e0e0e0",
+            padding: "10px 14px", borderRadius: 12, fontSize: 15, fontFamily: "'Amiri Quran',serif",
+            cursor: "pointer", direction: "rtl", textAlign: "right", lineHeight: 1.8,
+            animation: err ? "shake 0.3s" : "",
+          }}>{item.a}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Review 3: Complete from a random point
+function ExCompleteFrom({ ayahs, onDone }: any) {
+  const startIdx = useMemo(() => Math.floor(Math.random() * (ayahs.length - 1)), [ayahs]);
+  const shown = ayahs.slice(0, startIdx + 1);
+  const correct = ayahs[startIdx + 1];
+  const options = useMemo(() => {
+    const others = ayahs.filter((_: any, i: number) => i !== startIdx + 1).slice(0, 2);
+    return shuffle([correct, ...others]);
+  }, [correct, ayahs, startIdx]);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [err, setErr] = useState(false);
+
+  const pick = (a: string) => {
+    if (picked) return;
+    if (a === correct) { sfx("correct"); setPicked(a); setTimeout(() => onDone(1, 1), 500); }
+    else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, animation: "fadeUp 0.35s both" }}>
+      <div style={{ textAlign: "center", color: "#5a5a6a", fontSize: 15, fontWeight: 600 }}>🔗 أكمل التلاوة — ما الآية التالية؟</div>
+      <div style={{ background: "linear-gradient(135deg, #FFFDE7, #FFF8E1)", borderRadius: 16, padding: 14, direction: "rtl", border: "2px solid rgba(249,168,37,0.3)" }}>
+        {shown.map((a: string, i: number) => (
+          <p key={i} style={{ fontFamily: "'Amiri Quran',serif", fontSize: 18, lineHeight: 2, color: "#1a1a2e", marginBottom: 4, opacity: i < startIdx ? 0.4 : 1 }}>{a}</p>
+        ))}
+        <p style={{ fontFamily: "'Amiri Quran',serif", fontSize: 20, color: "#E65100", fontWeight: 900 }}>؟ ...</p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {options.map((o: string, i: number) => (
+          <button key={i} onClick={() => pick(o)} disabled={!!picked}
+            style={{
+              padding: "12px 16px", borderRadius: 14, fontSize: 16, fontFamily: "'Amiri Quran',serif",
+              direction: "rtl", textAlign: "right", lineHeight: 1.8,
+              background: picked === o && o === correct ? "#E8F5E9" : "#fff",
+              border: picked === o && o === correct ? "3px solid #0D7C3D" : "3px solid #eee",
+              cursor: picked ? "default" : "pointer", transition: "all 0.2s",
+              animation: err && !picked ? "shake 0.3s" : "",
+            }}>{o}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ================================================================
 // MAIN APP
 // ================================================================
@@ -575,6 +701,9 @@ export default function Miqdam() {
   const [totalQ, setTotalQ] = useState(0);
   const [exType, setExType] = useState("listen");
   const [showGoal, setShowGoal] = useState(false);
+  const [phase, setPhase] = useState("first"); // "first" = memorize each ayah, "review" = connect ayahs together
+  const [reviewIdx, setReviewIdx] = useState(0);
+  const [reviewExType, setReviewExType] = useState("nextAyah");
 
   const curAyah = ayahs[curAyahIdx] || "";
   const curGlobalNum = ayahGlobalNums[curAyahIdx] || 0;
@@ -632,20 +761,49 @@ export default function Miqdam() {
     if (!ok) return;
     setCurAyahIdx(0); setReps(0); setGoals(0);
     setTotalC(0); setTotalQ(0); setShowGoal(false);
-    setExType("listen");
+    setExType("listen"); setPhase("first"); setReviewIdx(0);
     sfx("whistle");
     setView("match");
   };
 
+  // Review exercises count (scales with number of ayahs)
+  const reviewTotal = Math.max(3, Math.min(ayahs.length * 2, 10));
+
   const onExDone = (c, q) => {
     setTotalC(tc => tc + c); setTotalQ(tq => tq + q);
+    
+    if (phase === "review") {
+      // Review phase
+      const nextR = reviewIdx + 1;
+      if (nextR >= reviewTotal) {
+        // Match complete!
+        setView("result");
+      } else {
+        setReviewIdx(nextR);
+        // Alternate between review exercise types
+        const types = ["nextAyah", "orderAyahs", "completeFrom"];
+        setReviewExType(types[nextR % types.length]);
+      }
+      return;
+    }
+    
+    // First phase (memorization)
     const next = reps + 1;
     setReps(next);
     if (next >= repsTarget) {
       sfx("goal"); setShowGoal(true); setGoals(g => g + 1);
       setTimeout(() => {
         setShowGoal(false);
-        if (curAyahIdx + 1 >= totalAyahs) { setView("result"); }
+        if (curAyahIdx + 1 >= totalAyahs) {
+          // All ayahs done — enter review phase if more than 1 ayah
+          if (totalAyahs > 1) {
+            setPhase("review");
+            setReviewIdx(0);
+            setReviewExType("nextAyah");
+          } else {
+            setView("result");
+          }
+        }
         else { setCurAyahIdx(i => i + 1); setReps(0); setExType("listen"); }
       }, 5000);
     } else {
@@ -1084,21 +1242,38 @@ export default function Miqdam() {
           }}>
             {/* Exercise type badge */}
             <div style={{ textAlign: "center" }}>
-              <span style={{ 
-                background: info.color, color: "#fff", 
-                padding: "5px 16px", borderRadius: 20, fontSize: 13, fontWeight: 700,
-                boxShadow: `0 2px 8px ${info.color}33`,
-              }}>
-                {info.icon} {info.label}
-              </span>
+              {phase === "first" ? (
+                <span style={{ 
+                  background: info.color, color: "#fff", 
+                  padding: "5px 16px", borderRadius: 20, fontSize: 13, fontWeight: 700,
+                  boxShadow: `0 2px 8px ${info.color}33`,
+                }}>
+                  {info.icon} {info.label} — {th.phase1}
+                </span>
+              ) : (
+                <span style={{ 
+                  background: "#F9A825", color: "#1a1a2e", 
+                  padding: "5px 16px", borderRadius: 20, fontSize: 13, fontWeight: 700,
+                  boxShadow: "0 2px 8px rgba(249,168,37,0.3)",
+                }}>
+                  📖 مراجعة — {th.phase2} ({reviewIdx + 1}/{reviewTotal})
+                </span>
+              )}
             </div>
 
             {/* Exercise content */}
             <div style={{ flex: 1 }}>
-              {exType === "listen" && <ExListen key={`l${curAyahIdx}-${reps}`} ayah={curAyah} ayahGlobalNum={curGlobalNum} onDone={onExDone} />}
-              {exType === "nextWord" && <ExNextWord key={`n${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
-              {exType === "blanks" && <ExBlanks key={`b${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
-              {exType === "order" && <ExOrder key={`o${curAyahIdx}-${reps}`} ayah={curAyah} onDone={onExDone} />}
+              {phase === "first" && <>
+                {exType === "listen" && <ExListen key={`l${curAyahIdx}-${reps}`} ayah={curAyah} ayahGlobalNum={curGlobalNum} onDone={onExDone} />}
+                {exType === "nextWord" && <ExNextWord key={`n${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
+                {exType === "blanks" && <ExBlanks key={`b${curAyahIdx}-${reps}`} ayah={curAyah} allAyahs={ayahs} onDone={onExDone} />}
+                {exType === "order" && <ExOrder key={`o${curAyahIdx}-${reps}`} ayah={curAyah} onDone={onExDone} />}
+              </>}
+              {phase === "review" && <>
+                {reviewExType === "nextAyah" && <ExNextAyah key={`ra${reviewIdx}`} ayahs={ayahs} onDone={onExDone} />}
+                {reviewExType === "orderAyahs" && <ExOrderAyahs key={`ro${reviewIdx}`} ayahs={ayahs} onDone={onExDone} />}
+                {reviewExType === "completeFrom" && <ExCompleteFrom key={`rc${reviewIdx}`} ayahs={ayahs} onDone={onExDone} />}
+              </>}
             </div>
           </div>
         </div>
