@@ -393,7 +393,7 @@ function ExListen({ ayah, ayahGlobalNum, onDone }) {
           {isLoading ? "جاري التحميل..." : isPlaying ? "جاري التشغيل..." : audioState === "done" ? "✅ استمعت — ردّد الآن" : audioState === "error" ? "الصوت غير متوفر" : "اضغط للاستماع"}
         </div>
       </div>
-      <Btn onClick={() => { sfx("correct"); onDone(1, 1); }} color="#0D7C3D" full disabled={!canProceed}
+      <Btn onClick={() => { onDone(1, 1); }} color="#0D7C3D" full disabled={!canProceed}
         style={{ opacity: canProceed ? 1 : 0.4 }}>
         ✅ رددت الآية
       </Btn>
@@ -420,10 +420,10 @@ function ExNextWord({ ayah, allAyahs, onDone }) {
   const pick = (w) => {
     if (picked) return;
     if (w === correctWord) {
-      sfx("correct"); setPicked(w);
+      setPicked(w);
       setTimeout(() => onDone(1, 1), 500);
     } else {
-      sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500);
+      setErr(true); setTimeout(() => setErr(false), 500);
     }
   };
 
@@ -473,9 +473,9 @@ function ExBlanks({ ayah, allAyahs, onDone }) {
   const pick = (w) => {
     if (picked) return;
     if (w === correctWord) {
-      sfx("correct"); setPicked(w);
+      setPicked(w);
       setTimeout(() => onDone(1, 1), 500);
-    } else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+    } else { setErr(true); setTimeout(() => setErr(false), 500); }
   };
 
   return (
@@ -517,9 +517,9 @@ function ExOrder({ ayah, onDone }) {
 
   const pick = (item) => {
     if (item.i === placed.length) {
-      sfx("correct"); const np = [...placed, item]; setPlaced(np); setErr(false);
+      const np = [...placed, item]; setPlaced(np); setErr(false);
       if (np.length === words.length) setTimeout(() => onDone(1, 1), 500);
-    } else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+    } else { setErr(true); setTimeout(() => setErr(false), 500); }
   };
 
   return (
@@ -568,8 +568,8 @@ function ExNextAyah({ ayahs, onDone }: any) {
 
   const pick = (a: string) => {
     if (picked) return;
-    if (a === correct) { sfx("correct"); setPicked(a); setTimeout(() => onDone(1, 1), 500); }
-    else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+    if (a === correct) { setPicked(a); setTimeout(() => onDone(1, 1), 500); }
+    else { setErr(true); setTimeout(() => setErr(false), 500); }
   };
 
   return (
@@ -601,9 +601,9 @@ function ExOrderAyahs({ ayahs, onDone }: any) {
 
   const pick = (item: any) => {
     if (item.i === placed.length) {
-      sfx("correct"); const np = [...placed, item]; setPlaced(np); setErr(false);
+      const np = [...placed, item]; setPlaced(np); setErr(false);
       if (np.length === ayahs.length) setTimeout(() => onDone(1, 1), 500);
-    } else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+    } else { setErr(true); setTimeout(() => setErr(false), 500); }
   };
 
   return (
@@ -645,8 +645,8 @@ function ExCompleteFrom({ ayahs, onDone }: any) {
 
   const pick = (a: string) => {
     if (picked) return;
-    if (a === correct) { sfx("correct"); setPicked(a); setTimeout(() => onDone(1, 1), 500); }
-    else { sfx("wrong"); setErr(true); setTimeout(() => setErr(false), 500); }
+    if (a === correct) { setPicked(a); setTimeout(() => onDone(1, 1), 500); }
+    else { setErr(true); setTimeout(() => setErr(false), 500); }
   };
 
   return (
@@ -767,7 +767,7 @@ export default function Miqdam() {
     setCurAyahIdx(0); setReps(0); setGoals(0);
     setTotalC(0); setTotalQ(0); setShowGoal(false);
     setExType("listen"); setPhase("first"); setReviewIdx(0);
-    sfx("whistle");
+    
     setView("match");
   };
 
@@ -872,7 +872,7 @@ export default function Miqdam() {
         <div style={{ fontSize: 56, marginBottom: 8 }}>{ageEmoji}</div>
         <h2 style={{ fontSize: 21, marginBottom: 16 }}>كم عمرك؟</h2>
         <div style={{ fontSize: 48, fontWeight: 900, color: "#0D7C3D", marginBottom: 12 }}>{age}</div>
-        <input type="range" min={4} max={12} value={age} onChange={e => { sfx("tap"); setAge(+e.target.value); }}
+        <input type="range" min={4} max={12} value={age} onChange={e => { setAge(+e.target.value); }}
           style={{ width: "80%", maxWidth: 250, accentColor: "#0D7C3D", height: 8 }} />
         <div style={{ display: "flex", justifyContent: "space-between", width: "80%", maxWidth: 250, margin: "8px auto 0", fontSize: 13, color: "#999" }}>
           <span>4</span><span>12</span>
@@ -896,7 +896,7 @@ export default function Miqdam() {
         <Jersey c={JERSEY_COLORS[jCol]} n={jNum} sz={90} />
         <h2 style={{ fontSize: 19, margin: "8px 0 12px" }}>اختر قميصك</h2>
         <div style={{ display: "flex", gap: 7, justifyContent: "center", flexWrap: "wrap", marginBottom: 12 }}>
-          {JERSEY_COLORS.map((c, i) => <div key={i} onClick={() => { sfx("tap"); setJCol(i); }} style={{ width: 38, height: 38, borderRadius: 11, background: c.p, cursor: "pointer", border: jCol === i ? "3px solid #F9A825" : "3px solid transparent", boxShadow: jCol === i ? "0 0 10px rgba(249,168,37,0.4)" : "none", transition: "all 0.2s" }} />)}
+          {JERSEY_COLORS.map((c, i) => <div key={i} onClick={() => { setJCol(i); }} style={{ width: 38, height: 38, borderRadius: 11, background: c.p, cursor: "pointer", border: jCol === i ? "3px solid #F9A825" : "3px solid transparent", boxShadow: jCol === i ? "0 0 10px rgba(249,168,37,0.4)" : "none", transition: "all 0.2s" }} />)}
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
           <Btn onClick={() => setJNum(Math.max(1, jNum - 1))} color="#5a5a6a" style={{ padding: "7px 15px" }}>-</Btn>
@@ -909,7 +909,7 @@ export default function Miqdam() {
         <div style={{ fontSize: 52, marginBottom: 6 }}>{BADGES[bdg]}</div>
         <h2 style={{ fontSize: 19, marginBottom: 12 }}>شعار فريقك</h2>
         <div style={{ display: "flex", gap: 9, justifyContent: "center", flexWrap: "wrap" }}>
-          {BADGES.map((b, i) => <div key={i} onClick={() => { sfx("tap"); setBdg(i); }} style={{ fontSize: 30, padding: 7, borderRadius: 12, cursor: "pointer", background: bdg === i ? "#FFF8E1" : "#F5F5F0", border: bdg === i ? "3px solid #F9A825" : "3px solid transparent", transition: "all 0.2s" }}>{b}</div>)}
+          {BADGES.map((b, i) => <div key={i} onClick={() => { setBdg(i); }} style={{ fontSize: 30, padding: 7, borderRadius: 12, cursor: "pointer", background: bdg === i ? "#FFF8E1" : "#F5F5F0", border: bdg === i ? "3px solid #F9A825" : "3px solid transparent", transition: "all 0.2s" }}>{b}</div>)}
         </div>
       </div>,
     ];
@@ -986,7 +986,7 @@ export default function Miqdam() {
               <label style={{ display: "block", fontSize: 13, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>🔄 التكرار</label>
               <div style={{ display: "flex", gap: 6 }}>
                 {[10, 20, 30, 50].map(n => (
-                  <button key={n} onClick={() => { sfx("tap"); setRepsTarget(n); }}
+                  <button key={n} onClick={() => { setRepsTarget(n); }}
                     style={{ flex: 1, padding: "8px 0", borderRadius: 10, fontSize: 16, fontWeight: 800, border: repsTarget === n ? `2px solid ${th.accent}` : "2px solid #E0E0E0", background: repsTarget === n ? `${th.accent}15` : "#FAFAFA", color: repsTarget === n ? th.accent : "#999", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Tajawal',sans-serif" }}>{n}</button>
                 ))}
               </div>
@@ -995,7 +995,7 @@ export default function Miqdam() {
               <label style={{ display: "block", fontSize: 13, fontWeight: 800, color: "#1a1a2e", marginBottom: 8 }}>🎮 المغامرة</label>
               <div style={{ display: "flex", gap: 6 }}>
                 {Object.entries(THEMES).map(([key, t]) => (
-                  <button key={key} onClick={() => { sfx("tap"); setTheme(key); }}
+                  <button key={key} onClick={() => { setTheme(key); }}
                     style={{ flex: 1, padding: "8px 4px", borderRadius: 12, textAlign: "center", border: theme === key ? `2px solid ${t.accent}` : "2px solid #E0E0E0", background: theme === key ? `${t.accent}12` : "#FAFAFA", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Tajawal',sans-serif" }}>
                     <div style={{ fontSize: 22 }}>{t.icon}</div>
                     <div style={{ fontSize: 10, fontWeight: 700, color: theme === key ? t.accent : "#999", marginTop: 2 }}>{t.name}</div>
@@ -1095,146 +1095,110 @@ export default function Miqdam() {
 
             {/* ── THEMED PROGRESS SCENE ── */}
             {theme === "football" && (
-              <svg viewBox="0 0 400 65" style={{ width: "100%", borderRadius: 12, display: "block", marginBottom: 8, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.08)"}` }}>
-                {/* Grass */}
-                <rect width="400" height="65" fill="#2d6a30" rx="10" />
-                {[0,50,100,150,200,250,300,350].map((x, i) => <rect key={i} x={x} y="0" width="25" height="80" fill={i % 2 === 0 ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"} />)}
-                {/* Field markings */}
-                <line x1="200" y1="5" x2="200" y2="75" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeDasharray="4,4" />
-                <circle cx="200" cy="40" r="15" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-                {/* Goal */}
-                <rect x="375" y="18" width="20" height="44" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" rx="2" />
-                {[380,385,390].map((x,i) => <line key={i} x1={x} y1="18" x2={x} y2="62" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />)}
-                {[25,32,39,46,53].map((y,i) => <line key={i} x1="375" y1={y} x2="395" y2={y} stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />)}
-                {/* Trail */}
-                <rect x="0" y="0" width={clampedBall * 4} height="80" fill={`rgba(249,168,37,${0.05 + excitement * 0.1})`} rx="12" style={{ transition: "width 1s ease" }} />
-                {/* Player */}
-                <g style={{ transform: `translateX(${Math.max(10, clampedBall * 3.6)}px)`, transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
-                  {/* Shadow */}
-                  <ellipse cx="0" cy="68" rx="12" ry="3" fill="rgba(0,0,0,0.2)" />
-                  {/* Body */}
-                  <rect x="-6" y="35" width="12" height="18" rx="3" fill={profile?.color?.p || "#0D7C3D"} />
-                  <rect x="-5" y="50" width="10" height="5" rx="2" fill="#fff" />
-                  {/* Legs */}
-                  <rect x="-4" y="54" width="3" height="10" rx="1" fill="#FFB74D" />
-                  <rect x="1" y="54" width="3" height="10" rx="1" fill="#FFB74D" />
-                  {/* Head */}
-                  <circle cx="0" cy="30" r="7" fill="#FFB74D" />
-                  <path d="M-5 28 Q0 22 5 28" fill="#3E2723" />
-                  <circle cx="-2" cy="30" r="1" fill="#222" />
-                  <circle cx="3" cy="30" r="1" fill="#222" />
-                </g>
-                {/* Ball */}
-                <g style={{ transform: `translateX(${Math.max(30, clampedBall * 3.6 + 18)}px)`, transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
-                  <circle cx="0" cy="55" r="6" fill="#fff" stroke="#333" strokeWidth="0.6" />
-                  <path d="M0 49.5 L-2 51.5 L-1 54 L1 54 L2 51.5 Z" fill="#333" opacity="0.7" />
-                  <path d="M-5.5 54 L-3.5 52.5 L-3 55 L-5 56.5 Z" fill="#333" opacity="0.5" />
-                  <path d="M5.5 54 L3.5 52.5 L3 55 L5 56.5 Z" fill="#333" opacity="0.5" />
-                  <path d="M-2 58 L0 56.5 L2 58 L1 60 L-1 60 Z" fill="#333" opacity="0.5" />
-                </g>
-                {excitement > 0.8 && <text x="355" y="44" fontSize="16" style={{ animation: "pulse 0.5s infinite" }}>🔥</text>}
-              </svg>
+              <div style={{ position: "relative", height: 180, overflow: "hidden", borderRadius: 16, margin: "0 4px" }}>
+                <svg viewBox="0 0 370 180" style={{ width: "100%", height: "100%", display: "block" }}>
+                  <rect width="370" height="180" fill="#0a1628" rx="12" />
+                  <rect y="70" width="370" height="110" fill="#2d6a30" />
+                  <rect x="80" y="8" width="4" height="22" fill="rgba(255,255,255,.12)" rx="2" />
+                  <rect x="78" y="4" width="10" height="6" fill="#F9A825" rx="2" opacity=".5" />
+                  <rect x="280" y="8" width="4" height="22" fill="rgba(255,255,255,.12)" rx="2" />
+                  <rect x="278" y="4" width="10" height="6" fill="#F9A825" rx="2" opacity=".5" />
+                  {Array.from({length:50}).map((_: any,i: number) => <rect key={`cr${i}`} x={10+i*7} y={40} width="5" height={8+Math.sin(i)*4} fill={`hsl(${[0,120,200,40,280][i%5]},50%,${35+i%3*8}%)`} rx="1.5" />)}
+                  {[0,50,100,150,200,250,300].map((x: number,i: number) => <rect key={`gs${i}`} x={x} y="70" width="25" height="110" fill={i%2===0?"rgba(255,255,255,.02)":"rgba(0,0,0,.02)"} />)}
+                  <line x1="185" y1="75" x2="185" y2="175" stroke="rgba(255,255,255,.1)" strokeWidth="1" strokeDasharray="4,4" />
+                  <circle cx="185" cy="125" r="16" fill="none" stroke="rgba(255,255,255,.06)" />
+                  <rect x="344" y="100" width="22" height="50" fill="none" stroke="rgba(255,255,255,.45)" strokeWidth="2" rx="2" />
+                  {[348,353,358].map((x: number,i: number) => <line key={`gn${i}`} x1={x} y1="100" x2={x} y2="150" stroke="rgba(255,255,255,.06)" />)}
+                  <rect y="70" width={clampedBall * 3.5} height="110" fill={`rgba(249,168,37,${0.03 + excitement * 0.07})`} style={{ transition: "width .7s ease" }} />
+                  <g style={{ transform: `translateX(${15 + clampedBall * 3.1}px)`, transition: "transform .7s cubic-bezier(.17,.67,.45,1.2)" }}>
+                    <ellipse cx="0" cy="168" rx="10" ry="3" fill="rgba(0,0,0,.15)" />
+                    <rect x="-5" y="125" width="10" height="16" rx="2.5" fill={profile?.color?.p || "#0D7C3D"} />
+                    <rect x="-4" y="139" width="8" height="4" rx="1.5" fill="#fff" />
+                    <rect x="-3" y="142" width="2.5" height="9" rx="1" fill="#FFB74D" />
+                    <rect x="0.5" y="142" width="2.5" height="9" rx="1" fill="#FFB74D" />
+                    <circle cx="0" cy="120" r="6" fill="#FFB74D" />
+                    <path d="M-4 118 Q0 113 4 118" fill="#3E2723" />
+                    <circle cx="-1.5" cy="120" r=".8" fill="#222" /><circle cx="1.5" cy="120" r=".8" fill="#222" />
+                  </g>
+                  <g style={{ transform: `translateX(${30 + clampedBall * 3.1}px)`, transition: "transform .7s cubic-bezier(.17,.67,.45,1.2)" }}>
+                    <circle cx="0" cy="148" r="5" fill="#fff" stroke="#555" strokeWidth=".5" />
+                    <path d="M-2 146 L0 144 L2 146 L1.5 149 L-1.5 149Z" fill="#333" opacity=".5" />
+                  </g>
+                  {excitement > 0.8 && <text x="328" y="130" fontSize="16">🔥</text>}
+                </svg>
+                <div style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,.6)", borderRadius: 14, padding: "4px 18px", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 24, fontWeight: 900, color: "#4ADE80" }}>{reps}</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>/ {repsTarget}</span>
+                </div>
+              </div>
             )}
 
             {theme === "racing" && (
-              <svg viewBox="0 0 400 70" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
-                {/* Asphalt */}
-                <rect width="400" height="70" fill="#37474F" rx="12" />
-                {/* Road markings */}
-                <rect x="0" y="0" width="400" height="3" fill="#F9A825" opacity="0.4" rx="1" />
-                <rect x="0" y="67" width="400" height="3" fill="#F9A825" opacity="0.4" rx="1" />
-                {/* Lane dividers */}
-                {[0,30,60,90,120,150,180,210,240,270,300,330,360].map((x,i) => <rect key={`d1-${i}`} x={x} y="29" width="18" height="2" fill="rgba(255,255,255,0.3)" rx="1" />)}
-                {[0,30,60,90,120,150,180,210,240,270,300,330,360].map((x,i) => <rect key={`d2-${i}`} x={x} y="59" width="18" height="2" fill="rgba(255,255,255,0.3)" rx="1" />)}
-                {/* Finish line */}
-                {[0,1,2,3,4,5,6,7,8].map((r) => [0,1,2].map((c) => 
-                  <rect key={`f-${r}-${c}`} x={385 + (c * 5)} y={r * 10} width="5" height="10" fill={(r + c) % 2 === 0 ? "#fff" : "#222"} opacity="0.6" />
-                ))}
-                {/* Opponent cars (3 lanes) */}
-                {/* Car 1 - slow */}
-                <g style={{ transform: `translateX(${Math.min(clampedBall * 2.5, clampedBall * 3.2 - 40)}px)`, transition: "transform 1.5s ease" }}>
-                  <rect x="30" y="8" width="24" height="14" rx="4" fill="#C62828" />
-                  <rect x="36" y="6" width="12" height="6" rx="2" fill="#EF5350" opacity="0.7" />
-                  <circle cx="34" cy="22" r="3" fill="#222" /><circle cx="50" cy="22" r="3" fill="#222" />
-                </g>
-                {/* Car 2 - medium */}
-                <g style={{ transform: `translateX(${Math.min(clampedBall * 3, clampedBall * 3.6 - 30)}px)`, transition: "transform 1.3s ease" }}>
-                  <rect x="20" y="38" width="24" height="14" rx="4" fill="#1565C0" />
-                  <rect x="26" y="36" width="12" height="6" rx="2" fill="#42A5F5" opacity="0.7" />
-                  <circle cx="24" cy="52" r="3" fill="#222" /><circle cx="40" cy="52" r="3" fill="#222" />
-                </g>
-                {/* Player car (your car) - lane 3 */}
-                <g style={{ transform: `translateX(${Math.max(10, clampedBall * 3.6)}px)`, transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
-                  <rect x="0" y="66" width="28" height="16" rx="5" fill={profile?.color?.p || "#F9A825"} />
-                  <rect x="6" y="64" width="14" height="7" rx="2" fill={profile?.color?.s || "#fff"} opacity="0.6" />
-                  <circle cx="5" cy="82" r="3.5" fill="#222" stroke="#666" strokeWidth="0.5" />
-                  <circle cx="23" cy="82" r="3.5" fill="#222" stroke="#666" strokeWidth="0.5" />
-                  {/* Speed lines */}
-                  {reps > 0 && <>
-                    <line x1="-8" y1="70" x2="-18" y2="70" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-                    <line x1="-6" y1="76" x2="-14" y2="76" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  </>}
-                </g>
-                {/* Car 3 - fast opponent */}
-                <g style={{ transform: `translateX(${Math.min(clampedBall * 3.5, clampedBall * 3.6 + 10)}px)`, transition: "transform 1.1s ease" }}>
-                  <rect x="40" y="38" width="22" height="13" rx="4" fill="#6A1B9A" />
-                  <rect x="45" y="36" width="10" height="5" rx="2" fill="#AB47BC" opacity="0.7" />
-                  <circle cx="44" cy="51" r="2.5" fill="#222" /><circle cx="58" cy="51" r="2.5" fill="#222" />
-                </g>
-                {excitement > 0.8 && <text x="348" y="78" fontSize="14" style={{ animation: "pulse 0.4s infinite" }}>💨</text>}
-              </svg>
+              <div style={{ position: "relative", height: 180, overflow: "hidden", borderRadius: 16, margin: "0 4px" }}>
+                <svg viewBox="0 0 370 180" style={{ width: "100%", height: "100%", display: "block" }}>
+                  <rect width="370" height="180" fill="#37474F" rx="12" />
+                  <rect y="0" width="370" height="4" fill="#F9A825" opacity=".3" rx="2" />
+                  <rect y="176" width="370" height="4" fill="#F9A825" opacity=".3" rx="2" />
+                  {[60,120].map((y: number,i: number) => <rect key={`ln${i}`} x="0" y={y} width="370" height="2" fill="rgba(255,255,255,.06)" />)}
+                  {[0,30,60,90,120,150,180,210,240,270,300,330].map((x: number,i: number) => <><rect key={`da${i}`} x={x} y={59} width="16" height="2" fill="rgba(255,255,255,.12)" rx="1" /><rect key={`db${i}`} x={x} y={119} width="16" height="2" fill="rgba(255,255,255,.12)" rx="1" /></>)}
+                  {Array.from({length:18}).map((_: any,r: number) => Array.from({length:3}).map((_: any,c: number) => <rect key={`f${r}${c}`} x={350+c*7} y={r*10} width="7" height="10" fill={(r+c)%2===0?"rgba(255,255,255,.25)":"rgba(0,0,0,.15)"} />))}
+                  <g style={{ transform: `translateX(${Math.min(clampedBall * 2.2, clampedBall * 3 - 30)}px)`, transition: "transform 1.2s ease" }}>
+                    <rect x="20" y="20" width="34" height="17" rx="5" fill="#C62828" />
+                    <rect x="27" y="16" width="16" height="7" rx="3" fill="#EF5350" opacity=".7" />
+                    <circle cx="25" cy="37" r="4" fill="#222" /><circle cx="49" cy="37" r="4" fill="#222" />
+                  </g>
+                  <g style={{ transform: `translateX(${Math.min(clampedBall * 2.8, clampedBall * 3.2 - 20)}px)`, transition: "transform 1s ease" }}>
+                    <rect x="15" y="80" width="34" height="17" rx="5" fill="#1565C0" />
+                    <rect x="22" y="76" width="16" height="7" rx="3" fill="#42A5F5" opacity=".7" />
+                    <circle cx="20" cy="97" r="4" fill="#222" /><circle cx="44" cy="97" r="4" fill="#222" />
+                  </g>
+                  <g style={{ transform: `translateX(${10 + clampedBall * 3.1}px)`, transition: "transform .6s cubic-bezier(.17,.67,.45,1.2)" }}>
+                    <rect x="0" y="138" width="40" height="20" rx="6" fill={profile?.color?.p || "#F9A825"} />
+                    <rect x="8" y="133" width="18" height="8" rx="3" fill={profile?.color?.s || "#FFD54F"} opacity=".6" />
+                    <circle cx="6" cy="158" r="5" fill="#222" stroke="#666" strokeWidth=".5" />
+                    <circle cx="34" cy="158" r="5" fill="#222" stroke="#666" strokeWidth=".5" />
+                    {reps > 0 && <><line x1="-5" y1="144" x2="-16" y2="144" stroke="rgba(255,255,255,.25)" strokeWidth="1.5" /><line x1="-3" y1="150" x2="-12" y2="150" stroke="rgba(255,255,255,.15)" strokeWidth="1" /></>}
+                  </g>
+                  {excitement > 0.8 && <text x="330" y="155" fontSize="14">💨</text>}
+                </svg>
+                <div style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,.6)", borderRadius: 14, padding: "4px 18px", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 24, fontWeight: 900, color: "#FF9800" }}>{reps}</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>/ {repsTarget}</span>
+                </div>
+              </div>
             )}
 
             {theme === "climbing" && (
-              <svg viewBox="0 0 400 75" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
-                {/* Sky gradient */}
-                <defs>
-                  <linearGradient id="mtnSky" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#1a237e" />
-                    <stop offset="100%" stopColor="#4FC3F7" />
-                  </linearGradient>
-                </defs>
-                <rect width="400" height="75" fill="url(#mtnSky)" rx="12" />
-                {/* Stars at top */}
-                {[20,60,110,170,230,290,340,380].map((x,i) => <circle key={i} cx={x} cy={5 + (i*3) % 15} r={0.6 + (i%3)*0.3} fill="rgba(255,255,255,0.5)" />)}
-                {/* Mountain shape */}
-                <polygon points="0,100 50,55 100,70 160,35 220,50 280,25 340,15 380,8 400,5 400,100" fill="#4E342E" />
-                <polygon points="0,100 50,60 100,75 160,42 220,55 280,32 340,22 380,15 400,12 400,100" fill="#5D4037" />
-                {/* Snow caps */}
-                <polygon points="340,15 350,10 360,8 380,8 385,12 370,18 355,20" fill="rgba(255,255,255,0.6)" />
-                <polygon points="280,25 290,20 300,22 295,28" fill="rgba(255,255,255,0.4)" />
-                {/* Flag at summit */}
-                <line x1="385" y1="2" x2="385" y2="12" stroke="#fff" strokeWidth="1.5" />
-                <polygon points="385,2 398,5 385,8" fill="#F9A825" />
-                {/* Path markers */}
-                {[60,120,180,240,300,350].map((x,i) => {
-                  const y = 95 - (i+1) * 12;
-                  return <circle key={i} cx={x} cy={y} r="2" fill="rgba(255,255,255,0.2)" />;
-                })}
-                {/* Climber */}
-                <g style={{ 
-                  transform: `translate(${20 + clampedBall * 3.6}px, ${88 - clampedBall * 0.85}px)`,
-                  transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" 
-                }}>
-                  {/* Rope behind */}
-                  <line x1="0" y1="0" x2="-15" y2="10" stroke="#F9A825" strokeWidth="1" opacity="0.5" />
-                  {/* Body */}
-                  <circle cx="0" cy="-8" r="5" fill="#FFB74D" />
-                  <rect x="-4" y="-3" width="8" height="12" rx="2" fill={profile?.color?.p || "#E65100"} />
-                  {/* Backpack */}
-                  <rect x="2" y="-2" width="5" height="8" rx="1.5" fill="#795548" />
-                  {/* Arms reaching up */}
-                  <line x1="-4" y1="0" x2="-8" y2="-8" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="4" y1="0" x2="8" y2="-6" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
-                  {/* Legs */}
-                  <line x1="-2" y1="9" x2="-4" y2="15" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="2" y1="9" x2="5" y2="14" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
-                </g>
-                {/* Progress glow */}
-                <rect x="0" y="0" width={clampedBall * 4} height="75" fill={`rgba(255,255,255,${0.02 + excitement * 0.04})`} rx="12" style={{ transition: "width 1s ease" }} />
-                {excitement > 0.8 && <text x="365" y="20" fontSize="14" style={{ animation: "pulse 0.5s infinite" }}>⭐</text>}
-              </svg>
+              <div style={{ position: "relative", height: 180, overflow: "hidden", borderRadius: 16, margin: "0 4px" }}>
+                <svg viewBox="0 0 370 180" style={{ width: "100%", height: "100%", display: "block" }}>
+                  <defs><linearGradient id="mtnSky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0a1628"/><stop offset="50%" stopColor="#1a3a5c"/><stop offset="100%" stopColor="#4FC3F7"/></linearGradient></defs>
+                  <rect width="370" height="180" fill="url(#mtnSky2)" rx="12" />
+                  {[25,70,130,200,270,340].map((x: number,i: number) => <circle key={`st${i}`} cx={x} cy={10+i*4%18} r={.7+i*.15} fill={`rgba(255,255,255,${.25+i*.05})`} />)}
+                  <polygon points="0,180 50,110 100,130 170,65 240,85 310,40 355,28 370,22 370,180" fill="#3E2723" />
+                  <polygon points="0,180 50,118 100,136 170,74 240,92 310,50 355,38 370,32 370,180" fill="#5D4037" />
+                  <polygon points="310,50 320,42 335,38 350,34 358,38 348,48 335,52 322,55" fill="rgba(255,255,255,.45)" />
+                  <polygon points="170,74 180,66 190,70 185,78" fill="rgba(255,255,255,.3)" />
+                  <line x1="362" y1="16" x2="362" y2="30" stroke="#fff" strokeWidth="1.5" />
+                  <polygon points="362,16 378,20 362,24" fill="#F9A825" />
+                  <g style={{ transform: `translate(${20 + clampedBall * 3.2}px, ${155 - clampedBall * 1.3}px)`, transition: "transform .8s cubic-bezier(.17,.67,.45,1.2)" }}>
+                    <line x1="0" y1="0" x2="-12" y2="8" stroke="#F9A825" strokeWidth="1" opacity=".5" />
+                    <circle cx="0" cy="-8" r="5" fill="#FFB74D" />
+                    <rect x="-4" y="-3" width="8" height="12" rx="2" fill={profile?.color?.p || "#00838F"} />
+                    <rect x="2" y="-2" width="5" height="8" rx="1.5" fill="#795548" />
+                    <line x1="-4" y1="0" x2="-8" y2="-7" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="4" y1="0" x2="8" y2="-5" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="-2" y1="9" x2="-4" y2="15" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="2" y1="9" x2="5" y2="14" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
+                  </g>
+                  {excitement > 0.8 && <text x="345" y="20" fontSize="14">⭐</text>}
+                </svg>
+                <div style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,.6)", borderRadius: 14, padding: "4px 18px", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 24, fontWeight: 900, color: "#4DD0E1" }}>{reps}</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>/ {repsTarget}</span>
+                </div>
+              </div>
             )}
+
           </div>
 
           {/* ── LIGHT BODY: Exercise type + Ayah + Exercise ── */}
