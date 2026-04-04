@@ -109,6 +109,12 @@ const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{overscroll-behavior:none}
+@media (min-width: 768px) {
+  html { font-size: 18px; }
+}
+@media (min-width: 1200px) {
+  html { font-size: 20px; }
+}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes pop{0%{transform:scale(0)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
@@ -330,7 +336,7 @@ const Jersey = ({ c, n, sz = 60 }) => (
 
 // 1. Listen & Repeat (with audio button)
 function ExListen({ ayah, ayahGlobalNum, onDone }) {
-  const [audioState, setAudioState] = useState("idle"); // idle, loading, playing, error
+  const [audioState, setAudioState] = useState("idle"); // idle, loading, playing, done, error
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
 
@@ -338,27 +344,19 @@ function ExListen({ ayah, ayahGlobalNum, onDone }) {
     if (!ayahGlobalNum) { setAudioState("error"); return; }
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    
     setAudioState("loading");
     const url = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahGlobalNum}.mp3`;
     const a = new Audio();
     audioRef.current = a;
-    
     a.oncanplaythrough = () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       setAudioState("playing");
       a.play().catch(() => setAudioState("error"));
     };
-    a.onended = () => setAudioState("idle");
-    a.onerror = () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setAudioState("error");
-    };
-    
+    a.onended = () => setAudioState("done");
+    a.onerror = () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); setAudioState("error"); };
     timeoutRef.current = setTimeout(() => setAudioState("error"), 6000);
-    
-    a.src = url;
-    a.load();
+    a.src = url; a.load();
   };
 
   useEffect(() => () => {
@@ -366,32 +364,39 @@ function ExListen({ ayah, ayahGlobalNum, onDone }) {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
 
+  const canProceed = audioState === "done" || audioState === "error";
   const isPlaying = audioState === "playing";
   const isLoading = audioState === "loading";
-  const isError = audioState === "error";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, animation: "fadeUp 0.35s both" }}>
-      <div style={{ textAlign: "center", color: "#5a5a6a", fontSize: 15, fontWeight: 600 }}>🔊 استمع للآية ثم ردّدها بصوتك</div>
-      <AyahBox text={ayah} />
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, animation: "fadeUp 0.35s both" }}>
+      <AyahBox text={ayah} size={24} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
         <button onClick={playAudio} disabled={isPlaying || isLoading}
           style={{
-            width: 80, height: 80, borderRadius: "50%",
-            background: isPlaying ? "linear-gradient(135deg, #1565C0, #0D47A1)" : isError ? "linear-gradient(135deg, #C62828, #B71C1C)" : "linear-gradient(135deg, #0D7C3D, #1B5E20)",
-            border: "4px solid rgba(255,255,255,0.3)", cursor: isPlaying ? "default" : "pointer", fontSize: 36,
-            boxShadow: "0 6px 24px rgba(0,0,0,0.2)",
+            width: 56, height: 56, borderRadius: "50%",
+            background: isPlaying ? "linear-gradient(135deg, #1565C0, #0D47A1)" : audioState === "error" ? "#C62828" : "linear-gradient(135deg, #0D7C3D, #1B5E20)",
+            border: "none", cursor: isPlaying ? "default" : "pointer",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
             animation: isPlaying ? "pulse 1s infinite" : isLoading ? "pulse 0.6s infinite" : "none",
-            transition: "all 0.3s",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "all 0.3s", display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-          {isLoading ? "⏳" : isPlaying ? "🔊" : isError ? "🔇" : "▶️"}
+          {isLoading ? <span style={{ fontSize: 20 }}>⏳</span> : isPlaying ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          ) : audioState === "error" ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M3.63 3.63a.996.996 0 000 1.41L7.29 8.7 7 9H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71v-4.17l4.18 4.18c-.49.37-1.02.68-1.6.91-.36.15-.58.53-.58.92 0 .72.73 1.18 1.39.91.8-.33 1.55-.77 2.22-1.31l1.34 1.34a.996.996 0 101.41-1.41L5.05 3.63c-.39-.39-1.02-.39-1.42 0z"/></svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          )}
         </button>
-        <p style={{ textAlign: "center", fontSize: 13, color: isError ? "#C62828" : "#999" }}>
-          {isLoading ? "جاري التحميل..." : isPlaying ? "🔊 جاري التشغيل..." : isError ? "⚠️ الصوت غير متوفر — اقرأ الآية بنفسك" : "اضغط لسماع الشيخ المشاري العفاسي"}
-        </p>
+        <div style={{ fontSize: 12, color: audioState === "error" ? "#C62828" : "#999", maxWidth: 160 }}>
+          {isLoading ? "جاري التحميل..." : isPlaying ? "جاري التشغيل..." : audioState === "done" ? "✅ استمعت — ردّد الآن" : audioState === "error" ? "الصوت غير متوفر" : "اضغط للاستماع"}
+        </div>
       </div>
-      <Btn onClick={() => { sfx("correct"); onDone(1, 1); }} color="#0D7C3D" full>✅ رددت الآية</Btn>
+      <Btn onClick={() => { sfx("correct"); onDone(1, 1); }} color="#0D7C3D" full disabled={!canProceed}
+        style={{ opacity: canProceed ? 1 : 0.4 }}>
+        ✅ رددت الآية
+      </Btn>
     </div>
   );
 }
@@ -1019,16 +1024,12 @@ export default function Miqdam() {
               <p style={{ fontSize: 13, color: "#C62828" }}>⚠️ {fetchError}</p>
             </div>
           )}
-        </div>
 
-        {/* Sticky start button */}
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "12px 16px", background: "linear-gradient(180deg, transparent, #f5f5f0 30%)", display: "flex", justifyContent: "center" }}>
-          <div style={{ maxWidth: 600, width: "100%" }}>
-            <Btn onClick={startMatch} color={th.accent} full disabled={loading}
-              style={{ fontSize: 19, padding: 16, borderRadius: 18, animation: loading ? "none" : "pulse 2.5s infinite" }}>
-              {loading ? "⏳ جاري التحميل..." : `${th.icon} انطلق!`}
-            </Btn>
-          </div>
+          {/* Start button - inline */}
+          <Btn onClick={startMatch} color={th.accent} full disabled={loading}
+            style={{ fontSize: 19, padding: 16, borderRadius: 18, animation: loading ? "none" : "pulse 2.5s infinite" }}>
+            {loading ? "⏳ جاري التحميل..." : `${th.icon} انطلق!`}
+          </Btn>
         </div>
       </div>
     );
@@ -1094,9 +1095,9 @@ export default function Miqdam() {
 
             {/* ── THEMED PROGRESS SCENE ── */}
             {theme === "football" && (
-              <svg viewBox="0 0 400 80" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
+              <svg viewBox="0 0 400 65" style={{ width: "100%", borderRadius: 12, display: "block", marginBottom: 8, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.08)"}` }}>
                 {/* Grass */}
-                <rect width="400" height="80" fill="#2d6a30" rx="12" />
+                <rect width="400" height="65" fill="#2d6a30" rx="10" />
                 {[0,50,100,150,200,250,300,350].map((x, i) => <rect key={i} x={x} y="0" width="25" height="80" fill={i % 2 === 0 ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"} />)}
                 {/* Field markings */}
                 <line x1="200" y1="5" x2="200" y2="75" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeDasharray="4,4" />
@@ -1125,20 +1126,23 @@ export default function Miqdam() {
                 </g>
                 {/* Ball */}
                 <g style={{ transform: `translateX(${Math.max(30, clampedBall * 3.6 + 18)}px)`, transition: "transform 1s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
-                  <circle cx="0" cy="55" r="6" fill="#fff" stroke="#999" strokeWidth="0.8" />
-                  <path d="M-3 53 L0 50 L3 53 L2 57 L-2 57 Z" fill="#333" opacity="0.2" />
+                  <circle cx="0" cy="55" r="6" fill="#fff" stroke="#333" strokeWidth="0.6" />
+                  <path d="M0 49.5 L-2 51.5 L-1 54 L1 54 L2 51.5 Z" fill="#333" opacity="0.7" />
+                  <path d="M-5.5 54 L-3.5 52.5 L-3 55 L-5 56.5 Z" fill="#333" opacity="0.5" />
+                  <path d="M5.5 54 L3.5 52.5 L3 55 L5 56.5 Z" fill="#333" opacity="0.5" />
+                  <path d="M-2 58 L0 56.5 L2 58 L1 60 L-1 60 Z" fill="#333" opacity="0.5" />
                 </g>
                 {excitement > 0.8 && <text x="355" y="44" fontSize="16" style={{ animation: "pulse 0.5s infinite" }}>🔥</text>}
               </svg>
             )}
 
             {theme === "racing" && (
-              <svg viewBox="0 0 400 90" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
+              <svg viewBox="0 0 400 70" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
                 {/* Asphalt */}
-                <rect width="400" height="90" fill="#37474F" rx="12" />
+                <rect width="400" height="70" fill="#37474F" rx="12" />
                 {/* Road markings */}
                 <rect x="0" y="0" width="400" height="3" fill="#F9A825" opacity="0.4" rx="1" />
-                <rect x="0" y="87" width="400" height="3" fill="#F9A825" opacity="0.4" rx="1" />
+                <rect x="0" y="67" width="400" height="3" fill="#F9A825" opacity="0.4" rx="1" />
                 {/* Lane dividers */}
                 {[0,30,60,90,120,150,180,210,240,270,300,330,360].map((x,i) => <rect key={`d1-${i}`} x={x} y="29" width="18" height="2" fill="rgba(255,255,255,0.3)" rx="1" />)}
                 {[0,30,60,90,120,150,180,210,240,270,300,330,360].map((x,i) => <rect key={`d2-${i}`} x={x} y="59" width="18" height="2" fill="rgba(255,255,255,0.3)" rx="1" />)}
@@ -1182,7 +1186,7 @@ export default function Miqdam() {
             )}
 
             {theme === "climbing" && (
-              <svg viewBox="0 0 400 100" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
+              <svg viewBox="0 0 400 75" style={{ width: "100%", borderRadius: 14, display: "block", marginBottom: 12, border: `2px solid ${excitement > 0.7 ? "rgba(249,168,37,0.5)" : "rgba(255,255,255,0.1)"}` }}>
                 {/* Sky gradient */}
                 <defs>
                   <linearGradient id="mtnSky" x1="0" y1="0" x2="0" y2="1">
@@ -1190,7 +1194,7 @@ export default function Miqdam() {
                     <stop offset="100%" stopColor="#4FC3F7" />
                   </linearGradient>
                 </defs>
-                <rect width="400" height="100" fill="url(#mtnSky)" rx="12" />
+                <rect width="400" height="75" fill="url(#mtnSky)" rx="12" />
                 {/* Stars at top */}
                 {[20,60,110,170,230,290,340,380].map((x,i) => <circle key={i} cx={x} cy={5 + (i*3) % 15} r={0.6 + (i%3)*0.3} fill="rgba(255,255,255,0.5)" />)}
                 {/* Mountain shape */}
@@ -1227,7 +1231,7 @@ export default function Miqdam() {
                   <line x1="2" y1="9" x2="5" y2="14" stroke="#FFB74D" strokeWidth="2" strokeLinecap="round" />
                 </g>
                 {/* Progress glow */}
-                <rect x="0" y="0" width={clampedBall * 4} height="100" fill={`rgba(255,255,255,${0.02 + excitement * 0.04})`} rx="12" style={{ transition: "width 1s ease" }} />
+                <rect x="0" y="0" width={clampedBall * 4} height="75" fill={`rgba(255,255,255,${0.02 + excitement * 0.04})`} rx="12" style={{ transition: "width 1s ease" }} />
                 {excitement > 0.8 && <text x="365" y="20" fontSize="14" style={{ animation: "pulse 0.5s infinite" }}>⭐</text>}
               </svg>
             )}
